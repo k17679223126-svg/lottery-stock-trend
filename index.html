@@ -209,7 +209,7 @@
   }
 
   /* ---------- 交易时段主线 ---------- */
-  .session-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px}
+  .session-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:0 0 16px}
   .stage-tab{display:flex;gap:10px;align-items:flex-start;text-align:left;font:inherit;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 13px;cursor:pointer;color:var(--text-2);transition:border-color .16s,background .16s}
   .stage-tab:hover{border-color:#33425a}
   .stage-tab[aria-selected="true"]{background:linear-gradient(160deg,rgba(240,190,90,.13),rgba(240,190,90,.02));border-color:rgba(240,190,90,.45);color:var(--text)}
@@ -217,6 +217,14 @@
   .stage-tab[aria-selected="true"] .st-no{background:var(--gold);color:#12100a}
   .stage-tab .st-t{font-size:13.5px;font-weight:650;display:block}
   .stage-tab .st-s{font-size:11.5px;color:var(--text-3);display:block;margin-top:2px;line-height:1.4}
+  .sc-ops{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}
+  .sc-op{background:rgba(255,255,255,.03);border:1px solid var(--line-soft);border-radius:8px;padding:6px 8px}
+  .sc-op .k{font-size:10.5px;color:var(--text-3)}
+  .sc-op .v{font-size:12.5px;font-weight:650;font-variant-numeric:tabular-nums;margin-top:1px}
+  .sc-op.warn{border-color:rgba(255,91,91,.35)}
+  .sc-op.warn .v{color:#ffb3b3}
+  .sc-foot{font-size:11.5px;color:var(--text-3);margin:8px 0 0;line-height:1.55}
+  @media (max-width:980px){ .sc-ops{grid-template-columns:1fr} }
   .stage-panel{display:none}
   .stage-panel.on{display:block}
   .stage-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
@@ -275,6 +283,7 @@
       <a href="#today">今日推荐</a>
       <a href="#lottery">彩票走势</a>
       <a href="#session">时段主线</a>
+      <a href="#shortterm">短线操作</a>
       <a href="#market">大盘环境</a>
       <a href="#picks">趋势个股</a>
       <a href="#method">方法与披露</a>
@@ -347,6 +356,10 @@
     </div>
 
     <div class="session-bar" role="tablist" aria-label="交易时段">
+      <button class="stage-tab" type="button" role="tab" id="tab-auction" data-stage="auction" aria-controls="panel-auction" aria-selected="false">
+        <span class="st-no">0</span>
+        <span><span class="st-t">集合竞价</span><span class="st-s">09:15–09:25 · 看开盘定价</span></span>
+      </button>
       <button class="stage-tab" type="button" role="tab" id="tab-morning" data-stage="morning" aria-controls="panel-morning" aria-selected="false">
         <span class="st-no">1</span>
         <span><span class="st-t">早盘推荐</span><span class="st-s">09:30–11:30 · 看开盘承接</span></span>
@@ -365,7 +378,16 @@
       </button>
     </div>
 
-    <div class="panel stage-panel on" id="panel-morning" role="tabpanel" aria-labelledby="tab-morning">
+    <div class="panel stage-panel on" id="panel-auction" role="tabpanel" aria-labelledby="tab-auction">
+      <div class="stage-head">
+        <div><h3>集合竞价：09:15–09:25 这十分钟给出的定价</h3><p class="hint" id="auction-hint">读取竞价口径中…</p></div>
+        <span class="tag" id="auction-tag">—</span>
+      </div>
+      <div class="stage-cards" id="auction-cards"></div>
+      <p class="stage-note" id="auction-note"></p>
+    </div>
+
+    <div class="panel stage-panel" id="panel-morning" role="tabpanel" aria-labelledby="tab-morning">
       <div class="stage-head">
         <div><h3>早盘：开盘半小时到上午收盘的强势结构</h3><p class="hint" id="morning-hint">读取分时中…</p></div>
         <span class="tag" id="morning-tag">—</span>
@@ -404,6 +426,19 @@
       <div class="stage-cards" id="tomorrow-cards"></div>
       <p class="stage-note" id="tomorrow-note"></p>
     </div>
+  </section>
+
+  <section class="section" id="shortterm" aria-labelledby="shortterm-title">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Short-term Trades</p>
+        <h2 id="shortterm-title">短线操作：2–5 个交易日的买卖计划</h2>
+        <p class="lead">短线不是看当天涨得最猛，而是看短期均线是否上抬、量能是否配合、离 MA5 有没有偏离过头。每只都给买入区间、止损位、目标位和持有周期，跌破止损不加仓、不摊平。</p>
+      </div>
+      <span class="pill" role="status" aria-live="polite"><span class="dot cache" id="shortterm-dot"></span><span id="shortterm-now">计算中</span></span>
+    </div>
+    <div class="stage-cards" id="shortterm-cards"></div>
+    <p class="stage-note" id="shortterm-note"></p>
   </section>
 
   <section class="section" id="lottery" aria-labelledby="lottery-title">
@@ -571,6 +606,7 @@
       <div class="panel">
         <h3>股票怎么筛</h3>
         <p>先算大盘：收盘价与 MA20 / MA60 的相对位置、MA20 斜率、近 20 日涨跌、样本股涨跌家数，得出市场温度与操作基调。</p>
+        <p>竞价与短线是两套独立口径：竞价用开盘缺口、竞价首笔成交额占昨日成交额的比例、开盘后是否守住开盘价；短线用 MA5/MA10 结构、近 5 日涨幅、量能比与偏离度，并给出买入区间、止损位、目标位与 2–5 日持有周期。</p>
         <p>时段主线在同一套因子上做时间切片：早盘看开盘缺口、日内均价上方的时间占比与量比；午盘看午后相对上午收盘的承接；收盘后做强弱结构与行业排序；明日推荐把趋势分、当日强度、量能合成观察分。</p>
         <p>再算个股：站上 MA20 与 MA60（18 / 14 分）、MA5&gt;MA10&gt;MA20（10 分）、MA20&gt;MA60（8 分）、MA20 上抬（8 分）、20 日涨幅（最多 18 分）、量能比 1–2.2 倍（8 分）、距 60 日高点 6% 内（6 分）、20 日回撤小于 12%（6 分）。总分 ≥62 进入观察名单，按分排序取前 5。</p>
       </div>
@@ -1644,12 +1680,13 @@
     var weekend = c.dow === 0 || c.dow === 6;
     var hashStage = null;
     try {
-      var mm = String(location.hash || "").match(/stage=(morning|midday|daily|tomorrow)/);
+      var mm = String(location.hash || "").match(/stage=(auction|morning|midday|daily|tomorrow)/);
       if (mm) hashStage = mm[1];
     } catch (e) {}
     var stage, label, open;
     if (weekend) { stage = "tomorrow"; label = "非交易日 · 周末"; open = false; }
-    else if (t < 570) { stage = "morning"; label = "盘前 09:00–09:30"; open = false; }
+    else if (t < 555) { stage = "auction"; label = "盘前 09:00–09:15"; open = false; }
+    else if (t < 570) { stage = "auction"; label = "集合竞价 09:15–09:25"; open = false; }
     else if (t < 690) { stage = "morning"; label = "早盘 09:30–11:30"; open = true; }
     else if (t < 780) { stage = "midday"; label = "午间休市 11:30–13:00"; open = false; }
     else if (t < 900) { stage = "midday"; label = "午盘 13:00–15:00"; open = true; }
@@ -1689,7 +1726,7 @@
       morningRet: morEnd / first.price - 1,
       afternoonRet: pm.length ? last.price / morEnd - 1 : null,
       openGap: prevClose ? first.price / prevClose - 1 : null,
-      lastTime: last.t, bars: parsed.length
+      firstVol: first.vol, firstAmt: first.amt, lastTime: last.t, bars: parsed.length
     };
   }
 
@@ -1821,12 +1858,56 @@
       if (r.s.afternoonRet != null) { aSum += r.s.afternoonRet; aCnt++; }
     });
 
+    var auction = rows.filter(function (r) { return r.q.o > 0 && r.q.pc > 0; })
+      .map(function (r) {
+        var ks = state.stockK[r.code];
+        var prevRow = ks && ks.length > 1 ? ks[ks.length - 2] : null;
+        var prevAmt = prevRow ? prevRow[5] * 100 * prevRow[2] : null;
+        var firstAmt = r.s && r.s.firstAmt ? r.s.firstAmt : null;
+        r.gap = r.q.o / r.q.pc - 1;
+        r.prevAmt = prevAmt;
+        r.firstAmt = firstAmt;
+        r.amtRatio = (firstAmt && prevAmt) ? firstAmt / prevAmt : null;
+        r.openHold = r.q.o ? r.price / r.q.o - 1 : 0;
+        r.aScore = 100 * (
+          0.28 * norm(r.gap * 100, 0, 4) +
+          0.22 * norm((r.amtRatio || 0) * 100, 0, 3) +
+          0.22 * norm(r.openHold * 100, -0.6, 1.6) +
+          0.18 * (r.trend / 100) +
+          0.10 * norm(r.vr, 0.6, 3)
+        );
+        return r;
+      })
+      .filter(function (r) { return r.gap > 0.001 && r.openHold > -0.002; })
+      .sort(function (a, b) { return b.aScore - a.aScore; })
+      .slice(0, 4);
+
+    var shortterm = rows.map(function (r) {
+      var dev = r.price / r.m.ma5 - 1;
+      var lo = Math.min(r.price, r.m.ma5) * 0.995;
+      var hi = Math.max(lo, Math.min(r.price, r.m.ma5 * 1.02));
+      var stop = Math.min(r.m.ma10 * 0.995, r.price * 0.96);
+      var tgt = r.m.high60 > r.price * 1.03 && r.m.high60 < r.price * 1.12 ? r.m.high60 : r.price * 1.08;
+      r.dev5 = dev; r.buyLo = lo; r.buyHi = hi; r.stop = stop; r.target = tgt;
+      r.sScore = 100 * (
+        0.30 * norm(r.m.ret5, 0, 12) +
+        0.22 * norm((r.m.ma5 / r.m.ma10 - 1) * 100, 0, 5) +
+        0.20 * norm(r.m.volRatio, 0.8, 2.5) +
+        0.16 * (1 - norm(dev * 100, 0, 8)) +
+        0.12 * (r.m.dd20 > -12 ? 1 : 0.3)
+      );
+      return r;
+    }).filter(function (r) {
+      return r.m.ma5 > r.m.ma10 && r.price > r.m.ma10 && r.m.ret5 > 0 && r.dev5 < 0.08 && r.pct > -4 && r.m.dd20 > -18 && r.m.volRatio >= 0.85;
+    }).sort(function (a, b) { return b.sScore - a.sScore; }).slice(0, 4);
+
     var minuteDates = {};
     Object.keys(state.intraday).forEach(function (c) { minuteDates[state.intraday[c].date] = 1; });
     var minuteDate = Object.keys(minuteDates).sort().pop() || "";
 
     return {
       morning: morning, midday: midday, tomorrow: tomorrow,
+      auction: auction, shortterm: shortterm,
       sampleCount: rows.length,
       minuteDate: minuteDate,
       afternoonAvailable: aCnt > 0,
@@ -1888,6 +1969,74 @@
       '<p class="sc-why">' + esc(why) + "</p></article>";
   }
 
+  function auctionCard(r) {
+    return '<article class="sc">' +
+      '<div class="sc-top"><div><div class="sc-name">' + esc(r.name) + "</div>" +
+      '<div class="sc-code">' + esc(r.code) + " · " + esc(r.industry || "—") + "</div></div>" +
+      '<div class="sc-pct ' + cls(r.gap * 100) + '">' + fmtPct(r.gap * 100) + "</div></div>" +
+      '<div class="sc-rows">' +
+      '<span class="sc-row">今开 <b>' + r.q.o.toFixed(2) + "</b></span>" +
+      '<span class="sc-row">现价 <b>' + r.price.toFixed(2) + "</b></span>" +
+      '<span class="sc-row">首分钟额 <b>' + (r.firstAmt ? (r.firstAmt / 10000).toFixed(0) + " 万" : "—") + "</b></span>" +
+      '<span class="sc-row">占昨额 <b>' + (r.amtRatio == null ? "—" : (r.amtRatio * 100).toFixed(1) + "%") + "</b></span>" +
+      "</div>" +
+      '<p class="sc-why">' + esc(auctionWhy(r)) + "</p></article>";
+  }
+
+  function auctionWhy(r) {
+    var parts = [];
+    parts.push("竞价缺口 " + fmtPct(r.gap * 100) + "，开盘后" + (r.openHold >= 0 ? "守住开盘价上方 +" + (r.openHold * 100).toFixed(2) + "%" : "跌破开盘价 " + (r.openHold * 100).toFixed(2) + "%"));
+    if (r.firstAmt) {
+      parts.push("开盘首分钟成交 " + (r.firstAmt / 10000).toFixed(0) + " 万元（含竞价撮合）" + (r.amtRatio != null ? "，约占昨日全天成交额的 " + (r.amtRatio * 100).toFixed(1) + "%" : ""));
+    } else {
+      parts.push("分时缺失，竞价量能无法拆分");
+    }
+    parts.push("量比 " + r.vr.toFixed(2) + "、日线趋势分 " + r.trend);
+    return parts.join("；") + "。";
+  }
+
+  function shorttermCard(r) {
+    return '<article class="sc">' +
+      '<div class="sc-top"><div><div class="sc-name">' + esc(r.name) + "</div>" +
+      '<div class="sc-code">' + esc(r.code) + " · " + esc(r.industry || "—") + "</div></div>" +
+      '<div class="sc-pct ' + cls(r.pct) + '">' + fmtPct(r.pct) + "</div></div>" +
+      '<div class="sc-ops">' +
+      '<div class="sc-op"><div class="k">买入区间</div><div class="v">' + r.buyLo.toFixed(2) + " – " + r.buyHi.toFixed(2) + "</div></div>" +
+      '<div class="sc-op warn"><div class="k">止损位</div><div class="v">' + r.stop.toFixed(2) + "</div></div>" +
+      '<div class="sc-op"><div class="k">目标位</div><div class="v">' + r.target.toFixed(2) + "</div></div>" +
+      "</div>" +
+      '<div class="sc-rows">' +
+      '<span class="sc-row">MA5 <b>' + r.m.ma5.toFixed(2) + "</b></span>" +
+      '<span class="sc-row">MA10 <b>' + r.m.ma10.toFixed(2) + "</b></span>" +
+      '<span class="sc-row">距MA5 <b>' + (r.dev5 * 100).toFixed(1) + "%</b></span>" +
+      '<span class="sc-row">量能比 <b>' + r.m.volRatio.toFixed(2) + "</b></span>" +
+      "</div>" +
+      '<p class="sc-why">' + esc(shorttermWhy(r)) + "</p>" +
+      '<p class="sc-foot">持有 2–5 个交易日；跌破 ' + r.stop.toFixed(2) + " 无条件离场，不摊平；到 " + r.target.toFixed(2) + " 附近分批止盈。</p>" +
+      "</article>";
+  }
+
+  function shorttermWhy(r) {
+    return "MA5 " + r.m.ma5.toFixed(2) + " 在 MA10 " + r.m.ma10.toFixed(2) + " 上方 " +
+      ((r.m.ma5 / r.m.ma10 - 1) * 100).toFixed(2) + "%，短期均线多头；近 5 日累计" +
+      (r.m.ret5 >= 0 ? "上涨 " : "下跌 ") + Math.abs(r.m.ret5).toFixed(1) + "%，5 日均量为 20 日均量的 " +
+      r.m.volRatio.toFixed(2) + " 倍；当前价距 MA5 " + (r.dev5 * 100).toFixed(1) +
+      "%（未过度偏离），20 日回撤 " + r.m.dd20.toFixed(1) + "%。";
+  }
+
+  function renderShortterm() {
+    var st = state.stages;
+    if (!st || !st.shortterm) return;
+    var list = st.shortterm;
+    $("shortterm-now").textContent = list.length ? list.length + " 只在计划内" : "暂无合适标的";
+    var dot = $("shortterm-dot");
+    if (dot) dot.className = "dot " + (list.length ? "live" : "cache");
+    $("shortterm-cards").innerHTML = list.length
+      ? list.map(function (r) { return shorttermCard(r); }).join("")
+      : '<div class="empty" style="grid-column:1/-1">当前没有满足「MA5 在 MA10 上方、站上 MA10、近 5 日上涨、未偏离 MA5 超过 8%」的短线标的，说明短线机会不成熟，空仓等待比强行入场更好。</div>';
+    $("shortterm-note").innerHTML = "买入区间取的是<b>回踩 MA5 附近</b>的位置，不是现价追高；止损压在 MA10 下方一点，目标位优先取 60 日高点、否则按 +8% 计。短线只做一次进出，跌破止损当天就走，不因为「再等等」而转成中线。以上为量化观察，不构成投资建议。";
+  }
+
   function renderSession() {
     var info = state.stageInfo || stageInfo();
     state.stage = info.stage;
@@ -1914,6 +2063,15 @@
     var st = state.stages;
     if (!st) return;
     var dateTxt = st.minuteDate || "分时缺失";
+
+    $("auction-tag").textContent = st.minuteDate || "—";
+    $("auction-hint").textContent = "样本 " + st.sampleCount + " 只 · 高开或不破开盘价的 " + st.auction.length + " 只";
+    $("auction-cards").innerHTML = st.auction.length
+      ? st.auction.map(function (r) { return auctionCard(r); }).join("")
+      : '<div class="empty" style="grid-column:1/-1">今天没有出现「高开且不破开盘价」的竞价结构：样本里要么普遍低开，要么高开后直接回落，竞价阶段不建议出手。</div>';
+    $("auction-note").innerHTML = info.tradingDay
+      ? "竞价看的是<b>定价意愿</b>而不是涨幅：缺口 0–3% 且开盘后不破开盘价，说明有人愿意在这个价位接；开盘首分钟的成交额（含竞价撮合）占昨日全天成交额的比例越高，说明参与度越足。高开超过 4% 通常是情绪透支，追进去容易接在开盘第一根阴线上。9:25 后数据才会更新到当日竞价结果，9:25 之前显示的是上一交易日的记录。"
+      : "今天是<b>非交易日</b>，上面是最近交易日（" + dateTxt + "）的竞价结果，用于复盘当时的开盘定价，不代表下一个交易日。";
 
     $("morning-tag").textContent = dateTxt;
     $("morning-hint").textContent = "样本 " + st.sampleCount + " 只 · 满足「涨幅>0.3% 且站上日内均价」的 " + st.morning.length + " 只在下方";
@@ -2036,6 +2194,7 @@
     renderMarket();
     renderPicks();
     renderSession();
+    renderShortterm();
     renderBanners();
   }
 
