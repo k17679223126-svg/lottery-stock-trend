@@ -207,6 +207,52 @@
     .metrics{grid-template-columns:1fr 1fr}
     .pick-metrics{grid-template-columns:1fr}
   }
+
+  /* ---------- 交易时段主线 ---------- */
+  .session-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px}
+  .stage-tab{display:flex;gap:10px;align-items:flex-start;text-align:left;font:inherit;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 13px;cursor:pointer;color:var(--text-2);transition:border-color .16s,background .16s}
+  .stage-tab:hover{border-color:#33425a}
+  .stage-tab[aria-selected="true"]{background:linear-gradient(160deg,rgba(240,190,90,.13),rgba(240,190,90,.02));border-color:rgba(240,190,90,.45);color:var(--text)}
+  .stage-tab .st-no{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:rgba(255,255,255,.06);color:var(--text-2);flex:none}
+  .stage-tab[aria-selected="true"] .st-no{background:var(--gold);color:#12100a}
+  .stage-tab .st-t{font-size:13.5px;font-weight:650;display:block}
+  .stage-tab .st-s{font-size:11.5px;color:var(--text-3);display:block;margin-top:2px;line-height:1.4}
+  .stage-panel{display:none}
+  .stage-panel.on{display:block}
+  .stage-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .stage-head h3{font-size:15px;margin:0;font-weight:650}
+  .stage-head .hint{margin-top:3px}
+  .stage-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .sc{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .sc-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .sc-name{font-size:14px;font-weight:700}
+  .sc-code{font-size:11px;color:var(--text-3);margin-top:1px}
+  .sc-pct{font-size:14.5px;font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .sc-rows{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+  .sc-row{font-size:11.5px;color:var(--text-3)}
+  .sc-row b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+  .sc-why{font-size:12px;color:var(--text-2);line-height:1.65;margin:9px 0 0;padding-top:9px;border-top:1px dashed var(--line-soft)}
+  .sc-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  .sc-stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .sc-stat .k{font-size:11px;color:var(--text-3)}
+  .sc-stat .v{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
+  .review{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .review h4{font-size:12.5px;margin:0 0 6px;color:var(--text-2);font-weight:600}
+  .review-list{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+  .review-list li{font-size:12.5px;color:var(--text-2);padding-left:12px;position:relative;font-variant-numeric:tabular-nums}
+  .review-list li::before{content:"·";position:absolute;left:2px;color:var(--gold);font-weight:700}
+  .stage-note{font-size:12.5px;color:var(--text-2);line-height:1.8;margin:12px 0 0;max-width:78ch}
+  .stage-note b{color:var(--text)}
+  @media (max-width:980px){
+    .session-bar{grid-template-columns:repeat(2,1fr)}
+    .stage-cards,.review{grid-template-columns:1fr}
+    .sc-stats{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:600px){
+    .session-bar{grid-template-columns:1fr 1fr;gap:8px}
+    .stage-tab{padding:10px 11px}
+    .stage-tab .st-s{font-size:11px}
+  }
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important}
   }
@@ -228,6 +274,7 @@
     <nav class="nav" aria-label="页面导航">
       <a href="#today">今日推荐</a>
       <a href="#lottery">彩票走势</a>
+      <a href="#session">时段主线</a>
       <a href="#market">大盘环境</a>
       <a href="#picks">趋势个股</a>
       <a href="#method">方法与披露</a>
@@ -285,6 +332,77 @@
           <a href="https://www.zhcw.com/kjxx/3d/" target="_blank" rel="noopener" style="color:var(--text-2);text-decoration:none;border-bottom:1px dotted var(--line)">官网核对</a>
         </div>
       </article>
+    </div>
+  </section>
+
+
+  <section class="section" id="session" aria-labelledby="session-title">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Intraday Playbook</p>
+        <h2 id="session-title">早盘 → 午盘 → 全天复盘 → 明日推荐</h2>
+        <p class="lead">一天里盘面递三次信号：早盘看资金敢不敢接、午盘看承接还在不在、收盘后看结构支不支持明天继续。四块按时间顺序排好，当前时段自动亮起，其它时段也能点开回看。</p>
+      </div>
+      <span class="pill" role="status" aria-live="polite"><span class="dot" id="session-dot"></span><span id="session-now">判定时段中</span></span>
+    </div>
+
+    <div class="session-bar" role="tablist" aria-label="交易时段">
+      <button class="stage-tab" type="button" role="tab" id="tab-morning" data-stage="morning" aria-controls="panel-morning" aria-selected="false">
+        <span class="st-no">1</span>
+        <span><span class="st-t">早盘推荐</span><span class="st-s">09:30–11:30 · 看开盘承接</span></span>
+      </button>
+      <button class="stage-tab" type="button" role="tab" id="tab-midday" data-stage="midday" aria-controls="panel-midday" aria-selected="false">
+        <span class="st-no">2</span>
+        <span><span class="st-t">午盘推荐</span><span class="st-s">13:00–15:00 · 看午后资金</span></span>
+      </button>
+      <button class="stage-tab" type="button" role="tab" id="tab-daily" data-stage="daily" aria-controls="panel-daily" aria-selected="false">
+        <span class="st-no">3</span>
+        <span><span class="st-t">全天复盘</span><span class="st-s">15:00 后 · 看结构</span></span>
+      </button>
+      <button class="stage-tab" type="button" role="tab" id="tab-tomorrow" data-stage="tomorrow" aria-controls="panel-tomorrow" aria-selected="false">
+        <span class="st-no">4</span>
+        <span><span class="st-t">明日推荐</span><span class="st-s">收盘后 · 次日计划</span></span>
+      </button>
+    </div>
+
+    <div class="panel stage-panel on" id="panel-morning" role="tabpanel" aria-labelledby="tab-morning">
+      <div class="stage-head">
+        <div><h3>早盘：开盘半小时到上午收盘的强势结构</h3><p class="hint" id="morning-hint">读取分时中…</p></div>
+        <span class="tag" id="morning-tag">—</span>
+      </div>
+      <div class="stage-cards" id="morning-cards"></div>
+      <p class="stage-note" id="morning-note"></p>
+    </div>
+
+    <div class="panel stage-panel" id="panel-midday" role="tabpanel" aria-labelledby="tab-midday">
+      <div class="stage-head">
+        <div><h3>午盘：午后资金是否接着做</h3><p class="hint" id="midday-hint">读取分时中…</p></div>
+        <span class="tag" id="midday-tag">—</span>
+      </div>
+      <div class="stage-cards" id="midday-cards"></div>
+      <p class="stage-note" id="midday-note"></p>
+    </div>
+
+    <div class="panel stage-panel" id="panel-daily" role="tabpanel" aria-labelledby="tab-daily">
+      <div class="stage-head">
+        <div><h3>全天复盘：这一天到底强在哪、弱在哪</h3><p class="hint" id="daily-hint">读取行情中…</p></div>
+        <span class="tag" id="daily-tag">—</span>
+      </div>
+      <div class="sc-stats" id="daily-stats"></div>
+      <div class="review">
+        <div><h4>指数与样本结构</h4><ul class="review-list" id="daily-index"></ul></div>
+        <div><h4>强弱与行业</h4><ul class="review-list" id="daily-rank"></ul></div>
+      </div>
+      <p class="stage-note" id="daily-note"></p>
+    </div>
+
+    <div class="panel stage-panel" id="panel-tomorrow" role="tabpanel" aria-labelledby="tab-tomorrow">
+      <div class="stage-head">
+        <div><h3>明日推荐：把今天的强度带到明天的观察名单</h3><p class="hint" id="tomorrow-hint">读取行情中…</p></div>
+        <span class="tag" id="tomorrow-tag">—</span>
+      </div>
+      <div class="stage-cards" id="tomorrow-cards"></div>
+      <p class="stage-note" id="tomorrow-note"></p>
     </div>
   </section>
 
@@ -453,6 +571,7 @@
       <div class="panel">
         <h3>股票怎么筛</h3>
         <p>先算大盘：收盘价与 MA20 / MA60 的相对位置、MA20 斜率、近 20 日涨跌、样本股涨跌家数，得出市场温度与操作基调。</p>
+        <p>时段主线在同一套因子上做时间切片：早盘看开盘缺口、日内均价上方的时间占比与量比；午盘看午后相对上午收盘的承接；收盘后做强弱结构与行业排序；明日推荐把趋势分、当日强度、量能合成观察分。</p>
         <p>再算个股：站上 MA20 与 MA60（18 / 14 分）、MA5&gt;MA10&gt;MA20（10 分）、MA20&gt;MA60（8 分）、MA20 上抬（8 分）、20 日涨幅（最多 18 分）、量能比 1–2.2 倍（8 分）、距 60 日高点 6% 内（6 分）、20 日回撤小于 12%（6 分）。总分 ≥62 进入观察名单，按分排序取前 5。</p>
       </div>
       <div class="panel">
@@ -566,6 +685,7 @@
   var state = {
     today: TODAY,
     dlt: [], d3: [], baseDlt: [], baseD3: [], liveDlt: null, liveD3: null,
+    minutes: {}, intraday: {}, stages: null, stage: "morning", stageManual: null, stageInfo: null,
     indexK: {}, stockK: {}, quotes: {},
     universe: SNAP.universe || [],
     source: { dlt: "snapshot", d3: "snapshot", market: "snapshot", stock: "snapshot" },
@@ -685,7 +805,7 @@
         var f = function (i) { var v = parseFloat(p[i]); return isNaN(v) ? 0 : v; };
         res[p[2]] = {
           n: p[1], p: f(3), pc: f(4), o: f(5), c: f(32), ch: f(31),
-          h: f(33), l: f(34), t: f(38), vr: f(49), mc: f(45), fc: f(44), tm: p[30]
+          h: f(33), l: f(34), t: f(38), vr: f(49), mc: f(45), fc: f(44), tm: p[30], amt: f(37)
         };
       });
       var mapped = {};
@@ -1503,6 +1623,356 @@
   /* =========================================================
      主流程
      ========================================================= */
+/* =========================================================
+     交易时段主线：早盘 / 午盘 / 全天复盘 / 明日推荐
+     ========================================================= */
+  function bjClock() {
+    try {
+      var f = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit", weekday: "short", hour12: false });
+      var parts = {};
+      f.formatToParts(new Date()).forEach(function (x) { parts[x.type] = x.value; });
+      var map = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+      return { h: parseInt(parts.hour, 10), m: parseInt(parts.minute, 10), dow: map[parts.weekday] };
+    } catch (e) {
+      var d = new Date();
+      return { h: d.getHours(), m: d.getMinutes(), dow: d.getDay() };
+    }
+  }
+
+  function stageInfo() {
+    var c = bjClock(), t = c.h * 60 + c.m;
+    var weekend = c.dow === 0 || c.dow === 6;
+    var hashStage = null;
+    try {
+      var mm = String(location.hash || "").match(/stage=(morning|midday|daily|tomorrow)/);
+      if (mm) hashStage = mm[1];
+    } catch (e) {}
+    var stage, label, open;
+    if (weekend) { stage = "tomorrow"; label = "非交易日 · 周末"; open = false; }
+    else if (t < 570) { stage = "morning"; label = "盘前 09:00–09:30"; open = false; }
+    else if (t < 690) { stage = "morning"; label = "早盘 09:30–11:30"; open = true; }
+    else if (t < 780) { stage = "midday"; label = "午间休市 11:30–13:00"; open = false; }
+    else if (t < 900) { stage = "midday"; label = "午盘 13:00–15:00"; open = true; }
+    else { stage = "daily"; label = "收盘后 15:00 之后"; open = false; }
+    var manual = state.stageManual || hashStage;
+    return {
+      stage: manual || stage, autoStage: stage, label: label, open: !weekend && open,
+      clock: pad2(c.h) + ":" + pad2(c.m), manual: !!manual, tradingDay: !weekend
+    };
+  }
+
+  function parseMinuteBars(bars) {
+    return (bars || []).map(function (b) {
+      var p = String(b).split(/\s+/);
+      return { t: p[0], price: +p[1], vol: +p[2], amt: +p[3] };
+    }).filter(function (x) { return x.price > 0 && !isNaN(x.price); });
+  }
+
+  function minuteStats(parsed, prevClose) {
+    if (!parsed.length) return null;
+    var first = parsed[0], last = parsed[parsed.length - 1];
+    var shares = last.vol * 100;
+    var avgPrice = shares > 0 ? last.amt / shares : last.price;
+    var above = 0, hi = -Infinity, lo = Infinity;
+    parsed.forEach(function (x) {
+      if (x.price >= avgPrice) above++;
+      if (x.price > hi) hi = x.price;
+      if (x.price < lo) lo = x.price;
+    });
+    var am = parsed.filter(function (x) { return x.t < "1300"; });
+    var pm = parsed.filter(function (x) { return x.t >= "1300"; });
+    var morEnd = am.length ? am[am.length - 1].price : last.price;
+    return {
+      openPrice: first.price, last: last.price, avgPrice: avgPrice,
+      aboveRatio: above / parsed.length, high: hi, low: lo,
+      posInRange: hi > lo ? (last.price - lo) / (hi - lo) : 0.5,
+      morningRet: morEnd / first.price - 1,
+      afternoonRet: pm.length ? last.price / morEnd - 1 : null,
+      openGap: prevClose ? first.price / prevClose - 1 : null,
+      lastTime: last.t, bars: parsed.length
+    };
+  }
+
+  function fetchMinute(code) {
+    var url = "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/minute/query?code=" + code;
+    return fetchJSON(url).then(function (d) {
+      var node = d && d.data && d.data[code];
+      if (!node) throw new Error("no minute");
+      var inner = node.data || node;
+      var bars = parseMinuteBars(inner.data || []);
+      if (!bars.length) throw new Error("empty minute");
+      var raw = String(inner.date || "");
+      return { date: raw.length === 8 ? raw.slice(0, 4) + "-" + raw.slice(4, 6) + "-" + raw.slice(6, 8) : raw, bars: bars };
+    });
+  }
+
+  function minuteCandidates() {
+    var rows = state.universe.map(function (u) {
+      return { code: u[0], q: state.quotes[u[0]] };
+    }).filter(function (x) { return x.q && x.q.pc; });
+    rows.sort(function (a, b) { return b.q.c - a.q.c; });
+    var out = rows.slice(0, 12).map(function (x) { return x.code; });
+    rows.sort(function (a, b) { return (b.q.vr || 0) - (a.q.vr || 0); });
+    rows.slice(0, 4).forEach(function (x) { if (out.indexOf(x.code) < 0) out.push(x.code); });
+    state.picks.forEach(function (p) { if (out.indexOf(p.code) < 0) out.push(p.code); });
+    return out.slice(0, 16);
+  }
+
+  function loadMinutes() {
+    var codes = minuteCandidates();
+    if (!codes.length) return Promise.resolve();
+    return poolAll(codes, function (code) { return fetchMinute(code); }, 6).then(function (res) {
+      codes.forEach(function (code, i) {
+        var r = res.rows[i];
+        if (r && r.bars && r.bars.length > 2) state.minutes[code] = r;
+      });
+      if (!Object.keys(state.minutes).length) state.errors.push("分时数据未取到，早盘/午盘改用均价近似口径");
+    });
+  }
+
+  function buildIntraday() {
+    var out = {};
+    Object.keys(state.minutes).forEach(function (code) {
+      var raw = state.minutes[code], q = state.quotes[code];
+      if (!raw || !raw.bars.length) return;
+      var st = minuteStats(raw.bars, q ? q.pc : 0);
+      if (st) out[code] = { stats: st, date: raw.date };
+    });
+    return out;
+  }
+
+  function intradayRef(q, s) {
+    if (s) return s.avgPrice;
+    return (q.h + q.l + q.p) / 3;
+  }
+
+  function buildStages() {
+    var rows = [];
+    state.universe.forEach(function (u) {
+      var code = u[0], industry = u[1];
+      var q = state.quotes[code], ks = state.stockK[code];
+      if (!q || !ks) return;
+      var m = klineMetrics(ks);
+      if (!m) return;
+      var intr = state.intraday[code] || null;
+      var st = intr ? intr.stats : null;
+      rows.push({
+        code: code, name: q.n, industry: industry, q: q, m: m,
+        pct: q.c, vr: q.vr, turnover: q.t, trend: trendScore(m),
+        s: st, sDate: intr ? intr.date : "",
+        ref: intradayRef(q, st),
+        above: st ? st.aboveRatio : (q.p > intradayRef(q, null) ? 0.62 : 0.38),
+        price: q.p
+      });
+    });
+
+    var morning = rows.filter(function (r) { return r.pct > 0.3 && r.price > r.ref; })
+      .map(function (r) {
+        r.mScore = 100 * (0.30 * r.above + 0.28 * norm(r.pct, 0, 7) + 0.20 * norm(r.vr, 0.6, 3.2) + 0.22 * (r.trend / 100));
+        return r;
+      })
+      .sort(function (a, b) { return b.mScore - a.mScore; })
+      .slice(0, 4);
+
+    var midday = rows.filter(function (r) { return r.pct > 0 && r.price > r.ref; })
+      .map(function (r) {
+        var af = r.s && r.s.afternoonRet != null ? r.s.afternoonRet : null;
+        r.afternoonRet = af;
+        var afPart = af == null ? 0 : norm(af * 100, -1.5, 3);
+        r.dScore = 100 * (0.26 * r.above + 0.30 * afPart + 0.22 * norm(r.pct, 0, 7) + 0.22 * (r.trend / 100));
+        return r;
+      })
+      .sort(function (a, b) { return b.dScore - a.dScore; })
+      .slice(0, 4);
+
+    var tomorrow = rows.filter(function (r) { return r.trend >= 50 || r.pct > 1; })
+      .map(function (r) {
+        r.tScore = 100 * (0.50 * (r.trend / 100) + 0.24 * norm(r.pct, 0, 7) + 0.16 * norm(r.vr, 0.6, 3.2) + 0.10 * r.above);
+        return r;
+      })
+      .sort(function (a, b) { return b.tScore - a.tScore; })
+      .slice(0, 5);
+
+    var up = 0, down = 0, flat = 0, pcts = [], amt = 0;
+    rows.forEach(function (r) {
+      if (r.pct > 0) up++; else if (r.pct < 0) down++; else flat++;
+      pcts.push(r.pct);
+      if (r.q.amt) amt += r.q.amt;
+    });
+    pcts.sort(function (a, b) { return a - b; });
+    var median = pcts.length ? pcts[Math.floor(pcts.length / 2)] : 0;
+    var sortedPct = rows.slice().sort(function (a, b) { return b.pct - a.pct; });
+
+    var ind = {};
+    rows.forEach(function (r) {
+      if (!r.industry) return;
+      ind[r.industry] = ind[r.industry] || { name: r.industry, sum: 0, n: 0 };
+      ind[r.industry].sum += r.pct; ind[r.industry].n++;
+    });
+    var indList = Object.keys(ind).map(function (k) { return ind[k]; })
+      .filter(function (x) { return x.n >= 2; })
+      .map(function (x) { return { name: x.name, avg: x.sum / x.n, n: x.n }; })
+      .sort(function (a, b) { return b.avg - a.avg; });
+
+    var cnt = 0, mSum = 0, aSum = 0, aCnt = 0;
+    rows.forEach(function (r) {
+      if (!r.s) return;
+      mSum += r.s.morningRet; cnt++;
+      if (r.s.afternoonRet != null) { aSum += r.s.afternoonRet; aCnt++; }
+    });
+
+    var minuteDates = {};
+    Object.keys(state.intraday).forEach(function (c) { minuteDates[state.intraday[c].date] = 1; });
+    var minuteDate = Object.keys(minuteDates).sort().pop() || "";
+
+    return {
+      morning: morning, midday: midday, tomorrow: tomorrow,
+      sampleCount: rows.length,
+      minuteDate: minuteDate,
+      afternoonAvailable: aCnt > 0,
+      avgMorningRet: cnt ? mSum / cnt : null,
+      avgAfternoonRet: aCnt ? aSum / aCnt : null,
+      daily: {
+        up: up, down: down, flat: flat, median: median, amount: amt || null,
+        top: sortedPct.slice(0, 3), bottom: sortedPct.slice(-3).reverse(),
+        industries: indList, indexes: (state.market ? state.market.list : [])
+      }
+    };
+  }
+
+  function morningWhy(r) {
+    var parts = [];
+    if (r.s) {
+      parts.push("开盘缺口 " + (r.s.openGap == null ? "—" : fmtPct(r.s.openGap * 100)) + "，现价 " + r.price.toFixed(2) + (r.price > r.ref ? " 站在日内均价 " + r.ref.toFixed(2) + " 上方" : " 仍在均价 " + r.ref.toFixed(2) + " 下方"));
+      parts.push("上午有 " + Math.round(r.above * 100) + "% 的时间运行在均价上方，日内位置 " + Math.round(r.s.posInRange * 100) + "%");
+    } else {
+      parts.push("现价 " + r.price.toFixed(2) + " 高于日内中枢 " + r.ref.toFixed(2) + "（分时缺失，按高低均价近似）");
+    }
+    parts.push("量比 " + r.vr.toFixed(2) + "、换手 " + r.turnover.toFixed(2) + "%，日线趋势分 " + r.trend);
+    return parts.join("；") + "。";
+  }
+
+  function middayWhy(r) {
+    var parts = [];
+    if (r.s && r.afternoonRet != null) {
+      parts.push("午后相对上午收盘" + (r.afternoonRet >= 0 ? "再涨 " : "回落 ") + Math.abs(r.afternoonRet * 100).toFixed(2) + "%，现价 " + r.price.toFixed(2) + (r.price > r.ref ? " 位于均价上方" : " 掉到均价下方"));
+    } else {
+      parts.push("午后尚未开盘，先用上午承接判断：现价 " + r.price.toFixed(2) + (r.price > r.ref ? " 在日内均价 " + r.ref.toFixed(2) + " 上方" : " 跌破日均价 " + r.ref.toFixed(2)));
+    }
+    parts.push("全天 " + Math.round(r.above * 100) + "% 时间在均价上方，涨幅 " + fmtPct(r.pct) + "，量比 " + r.vr.toFixed(2));
+    parts.push("日线趋势分 " + r.trend + "，MA20 位于 " + r.m.ma20.toFixed(2));
+    return parts.join("；") + "。";
+  }
+
+  function tomorrowWhy(r) {
+    return "趋势分 " + r.trend + "（" + (r.m.last > r.m.ma20 ? "站上" : "低于") + " MA20 " + r.m.ma20.toFixed(2) +
+      "，MA20" + (r.m.ma20Up ? "上抬" : "走平或下弯") + "），今日 " + fmtPct(r.pct) + "、量比 " + r.vr.toFixed(2) +
+      "；明日先看能否守住 " + r.m.ma20.toFixed(2) + "，再看开盘半小时量能是否延续。";
+  }
+
+  function stageCard(r, mode) {
+    var why = mode === "midday" ? middayWhy(r) : mode === "morning" ? morningWhy(r) : tomorrowWhy(r);
+    return '<article class="sc">' +
+      '<div class="sc-top"><div><div class="sc-name">' + esc(r.name) + "</div>" +
+      '<div class="sc-code">' + esc(r.code) + " · " + esc(r.industry || "—") + "</div></div>" +
+      '<div class="sc-pct ' + cls(r.pct) + '">' + fmtPct(r.pct) + "</div></div>" +
+      '<div class="sc-rows">' +
+      '<span class="sc-row">现价 <b>' + r.price.toFixed(2) + "</b></span>" +
+      '<span class="sc-row">均价 <b>' + r.ref.toFixed(2) + "</b></span>" +
+      '<span class="sc-row">量比 <b>' + r.vr.toFixed(2) + "</b></span>" +
+      '<span class="sc-row">换手 <b>' + r.turnover.toFixed(2) + "%</b></span>" +
+      (mode === "tomorrow"
+        ? '<span class="sc-row">趋势 <b>' + r.trend + "</b></span>"
+        : '<span class="sc-row">日内位置 <b>' + (r.s ? Math.round(r.s.posInRange * 100) + "%" : "—") + "</b></span>") +
+      "</div>" +
+      '<p class="sc-why">' + esc(why) + "</p></article>";
+  }
+
+  function renderSession() {
+    var info = state.stageInfo || stageInfo();
+    state.stage = info.stage;
+    var dot = $("session-dot");
+    if (dot) dot.className = "dot " + (info.open ? "live" : "cache");
+    var now = $("session-now");
+    if (now) now.textContent = info.label + " · 北京时间 " + info.clock + (info.manual ? "（手动查看）" : "");
+    Array.prototype.forEach.call(document.querySelectorAll(".stage-tab"), function (b) {
+      var on = b.getAttribute("data-stage") === state.stage;
+      b.setAttribute("aria-selected", on ? "true" : "false");
+      if (!b.__bound) {
+        b.__bound = 1;
+        b.addEventListener("click", function () {
+          state.stageManual = b.getAttribute("data-stage");
+          state.stageInfo = stageInfo();
+          renderSession();
+        });
+      }
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".stage-panel"), function (p) {
+      p.classList.toggle("on", p.id === "panel-" + state.stage);
+    });
+
+    var st = state.stages;
+    if (!st) return;
+    var dateTxt = st.minuteDate || "分时缺失";
+
+    $("morning-tag").textContent = dateTxt;
+    $("morning-hint").textContent = "样本 " + st.sampleCount + " 只 · 满足「涨幅>0.3% 且站上日内均价」的 " + st.morning.length + " 只在下方";
+    $("morning-cards").innerHTML = st.morning.length
+      ? st.morning.map(function (r) { return stageCard(r, "morning"); }).join("")
+      : '<div class="empty" style="grid-column:1/-1">今天没有出现明显的早盘强势结构：资金在观望，早盘不适合追高，等午盘看承接。</div>';
+    $("morning-note").innerHTML = info.tradingDay
+      ? "早盘用的三个硬指标：<b>开盘缺口</b>（竞价愿不愿意给溢价）、<b>均价上方时间占比</b>（当天买入的人赚不赚钱）、<b>量比与换手</b>（有没有新钱进来）。9:30–10:00 是判断窗口，10:30 之后信号衰减，14:30 之后早盘结构基本失效，请以午盘或收盘后的结论为准。"
+      : "今天是<b>非交易日</b>，上面展示的是最近交易日（" + dateTxt + "）的早盘记录，用于回看当时的结构，不代表下一个交易日。";
+
+    $("midday-tag").textContent = dateTxt;
+    $("midday-hint").textContent = st.afternoonAvailable
+      ? "样本 " + st.sampleCount + " 只 · 午后仍在均价上方且有承接的 " + st.midday.length + " 只"
+      : "午后数据尚未生成 · 先按上午承接给出观察名单";
+    $("midday-cards").innerHTML = st.midday.length
+      ? st.midday.map(function (r) { return stageCard(r, "midday"); }).join("")
+      : '<div class="empty" style="grid-column:1/-1">午后没有出现有承接的标的：涨幅为正且站在均价上方的数量不足，说明资金在午后选择撤退。</div>';
+    $("midday-note").innerHTML = st.afternoonAvailable
+      ? "午盘看的是<b>承接</b>而不是涨幅：午后相对上午收盘还能走高、并且全天大部分时间不破均价，说明有资金愿意在下午接货。尾盘 14:45 后的拉升如果伴随缩量，第二天容易回吐。"
+      : "现在是午间休市，13:00 才开下午盘。下面这组是<b>上午承接较好</b>的标的，午后开盘先观察它们是否继续站在均价上方——站不住就说明上午的强度是假的。";
+
+    var d = st.daily;
+    $("daily-tag").textContent = (state.fetchedAt || "").slice(0, 10) || "—";
+    $("daily-hint").textContent = "样本 " + st.sampleCount + " 只 · " + (state.market ? state.market.regime : "环境待判定");
+    $("daily-stats").innerHTML = [
+      ["上涨 / 下跌", d.up + " / " + d.down, d.flat ? "平盘 " + d.flat : ""],
+      ["涨跌中位数", fmtPct(d.median), "样本内排序取中"],
+      ["成交额合计", d.amount ? (d.amount / 10000).toFixed(1) + " 亿" : "—", "样本 " + st.sampleCount + " 只"],
+      ["上午 / 午后均值", (st.avgMorningRet == null ? "—" : fmtPct(st.avgMorningRet * 100)) + " / " + (st.avgAfternoonRet == null ? "—" : fmtPct(st.avgAfternoonRet * 100)), "分时均值"]
+    ].map(function (x) {
+      return '<div class="sc-stat"><div class="k">' + x[0] + '</div><div class="v">' + esc(x[1]) + '</div><div class="k" style="margin-top:2px">' + esc(x[2]) + "</div></div>";
+    }).join("");
+
+    $("daily-index").innerHTML = (d.indexes || []).map(function (x) {
+      return "<li>" + esc(x.name) + " " + x.close.toFixed(2) + "（" + (x.pct == null ? "—" : fmtPct(x.pct)) + "），" +
+        (x.above20 ? "在 MA20 上方" : "在 MA20 下方") + "，近 20 日 " + fmtPct(x.ret20, 1) + "</li>";
+    }).join("") || "<li>指数数据未取到</li>";
+
+    var rank = [];
+    if (d.top.length) rank.push("<li>最强：" + d.top.map(function (r) { return esc(r.name) + " " + fmtPct(r.pct); }).join("、") + "</li>");
+    if (d.bottom.length) rank.push("<li>最弱：" + d.bottom.map(function (r) { return esc(r.name) + " " + fmtPct(r.pct); }).join("、") + "</li>");
+    if (d.industries.length) rank.push("<li>行业前列：" + d.industries.slice(0, 3).map(function (x) { return esc(x.name) + " " + fmtPct(x.avg, 1); }).join("、") + "</li>");
+    if (d.industries.length) rank.push("<li>行业末位：" + d.industries.slice(-2).reverse().map(function (x) { return esc(x.name) + " " + fmtPct(x.avg, 1); }).join("、") + "</li>");
+    $("daily-rank").innerHTML = rank.join("") || "<li>暂无行业分布</li>";
+
+    var regimeTxt = state.market ? "当前环境判断为「" + state.market.regime + "」" : "";
+    var breadthTxt = d.up > d.down ? "上涨家数占优" : d.up < d.down ? "下跌家数占优" : "涨跌持平";
+    $("daily-note").innerHTML = "这一天" + breadthTxt + "（" + d.up + " 涨 / " + d.down + " 跌），样本涨跌中位数 " + fmtPct(d.median) + "，" + regimeTxt +
+      "。上午均值 " + (st.avgMorningRet == null ? "—" : fmtPct(st.avgMorningRet * 100)) + "、午后均值 " + (st.avgAfternoonRet == null ? "—" : fmtPct(st.avgAfternoonRet * 100)) +
+      "，两者同向且午后不弱，说明盘面是" + ((st.avgAfternoonRet != null && st.avgAfternoonRet >= 0) ? "<b>全天走强、尾盘没有明显回吐</b>" : "<b>上午强、午后走弱</b>") +
+      "，对次日的影响偏" + ((st.avgAfternoonRet != null && st.avgAfternoonRet >= 0) ? "正面" : "谨慎") + "。";
+
+    $("tomorrow-tag").textContent = st.minuteDate || "—";
+    $("tomorrow-hint").textContent = "综合趋势分、当日强度、量能，从 " + st.sampleCount + " 只样本里取前 " + st.tomorrow.length + " 只";
+    $("tomorrow-cards").innerHTML = st.tomorrow.length
+      ? st.tomorrow.map(function (r) { return stageCard(r, "tomorrow"); }).join("")
+      : '<div class="empty" style="grid-column:1/-1">没有同时满足趋势与当日强度的标的，明天以观察为主，不主动开仓。</div>';
+    $("tomorrow-note").innerHTML = "明日推荐不是买入指令，而是<b>次日开盘的验证清单</b>：先看大盘开盘方向，再看这些标的能否守住各自 MA20、开盘半小时量能是否比今天同期更大。若开盘就跌破 MA20 且放量，视为趋势被破坏，直接从名单里剔除。彩票与股票内容都只作研究参考，不构成投资建议。";
+  }
   function computeAll() {
     // 彩票
     if (state.dlt.length) {
@@ -1551,6 +2021,11 @@
     state.picks = picks.slice(0, 5);
     state.picksRelaxed = state.picks.some(function (p) { return p.score < 62; });
     state.watch = watch.slice(0, 5);
+    // 时段主线
+    state.intraday = buildIntraday();
+    state.stageInfo = stageInfo();
+    if (state.stageManual) state.stage = state.stageManual;
+    state.stages = buildStages();
   }
 
   function renderAll() {
@@ -1560,6 +2035,7 @@
     renderLotteryPanels();
     renderMarket();
     renderPicks();
+    renderSession();
     renderBanners();
   }
 
@@ -1631,6 +2107,7 @@
         var d = new Date();
         return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
       })();
+      return loadMinutes().then(function () {
       computeAll();
       renderAll();
       var stockLive = state.source.stock === "live";
@@ -1638,6 +2115,7 @@
       $("refresh").disabled = false;
       state.busy = false;
       window.__APP_READY__ = true;
+      });
     }).catch(function (e) {
       state.busy = false;
       $("refresh").disabled = false;
