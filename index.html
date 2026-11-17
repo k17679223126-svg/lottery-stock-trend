@@ -295,6 +295,9 @@
   .sc.alert-buy{border-color:rgba(240,190,90,.55)}
   @media (max-width:980px){ .hold-form{grid-template-columns:1fr 1fr} .hold-list{grid-template-columns:1fr} }
   @media (max-width:600px){ .hold-form{grid-template-columns:1fr} .viewswitch button{padding:6px 12px;font-size:12.5px} }
+  .on-cards{grid-template-columns:1fr}
+  .on-act{display:flex;justify-content:flex-end;margin-top:9px}
+  .on-act .btn{font-size:12px;padding:5px 12px}
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important}
   }
@@ -322,6 +325,7 @@
       <a href="#lottery" data-view="lottery">彩票走势</a>
       <a href="#session" data-view="stock">时段主线</a>
       <a href="#shortterm" data-view="stock">短线操作</a>
+      <a href="#overnight" data-view="stock">隔夜策略</a>
       <a href="#holdings" data-view="stock">我的持仓</a>
       <a href="#market" data-view="stock">大盘环境</a>
       <a href="#picks" data-view="stock">趋势个股</a>
@@ -629,6 +633,35 @@
   </section>
 
 
+
+  <section class="section" id="overnight" aria-labelledby="overnight-title">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Overnight</p>
+        <h2 id="overnight-title">隔夜策略：尾盘买、次日早盘卖</h2>
+        <p class="lead">14:45 之后挑当日强势但没透支的票，收盘价附近买入；次日 09:30–09:45 之间了结：冲到 +2% 直接卖，跌破 -1.5% 立刻走，都没触发也在 09:45 前平掉，不带进下午。</p>
+      </div>
+      <span class="pill" role="status" aria-live="polite"><span class="dot cache" id="on-dot"></span><span id="on-now">—</span></span>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>① 今日尾盘候选</h3><p class="hint" id="on-cand-hint">—</p></div>
+          <span class="tag" id="on-cand-tag">—</span>
+        </div>
+        <div class="stage-cards on-cards" id="on-cand-cards"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>② 明日卖出计划</h3><p class="hint" id="on-plan-hint">—</p></div>
+          <span class="tag" id="on-plan-tag">—</span>
+        </div>
+        <div class="stage-cards on-cards" id="on-plan-cards"></div>
+      </div>
+    </div>
+    <p class="stage-note">入选条件：当日涨幅 0.5–5%、收盘价位于日内 70% 以上（尾盘不走弱）、站上 MA5 与 MA20、量比 1–3 倍、换手 1–15%。卖出纪律：次日 +2% 止盈、-1.5% 止损、09:45 时间止损，三者任一先到即执行。这份名单只存在你自己的浏览器里，换设备看不到；隔夜持仓会承担跳空风险，不构成投资建议。</p>
+  </section>
+
   <section class="section" id="holdings" aria-labelledby="holdings-title">
     <div class="section-head">
       <div>
@@ -669,6 +702,7 @@
         <h3>股票怎么筛</h3>
         <p>先算大盘：收盘价与 MA20 / MA60 的相对位置、MA20 斜率、近 20 日涨跌、样本股涨跌家数，得出市场温度与操作基调。</p>
         <p>竞价与短线是两套独立口径：竞价用开盘缺口、竞价首笔成交额占昨日成交额的比例、开盘后是否守住开盘价；短线用 MA5/MA10 结构、近 5 日涨幅、量能比与偏离度，并给出买入区间、止损位、目标位与 2–5 日持有周期。</p>
+        <p>隔夜策略是独立口径：尾盘看当日涨幅、日内位置、均线位置与量能是否「强而不过热」，次日只按三条纪律了结（+2% 止盈、-1.5% 止损、09:45 时间止损），名单记在本地，供次日早盘提醒。</p>
         <p>提醒口径与短线一致：止损位取 MA10 下方 0.5%，参考买入区取 MA5 ±2%；持仓与短线候选共用这套口径，因此同一只票在哪个区间一眼能对上。</p>
         <p>时段主线在同一套因子上做时间切片：早盘看开盘缺口、日内均价上方的时间占比与量比；午盘看午后相对上午收盘的承接；收盘后做强弱结构与行业排序；明日推荐把趋势分、当日强度、量能合成观察分。</p>
         <p>再算个股：站上 MA20 与 MA60（18 / 14 分）、MA5&gt;MA10&gt;MA20（10 分）、MA20&gt;MA60（8 分）、MA20 上抬（8 分）、20 日涨幅（最多 18 分）、量能比 1–2.2 倍（8 分）、距 60 日高点 6% 内（6 分）、20 日回撤小于 12%（6 分）。总分 ≥62 进入观察名单，按分排序取前 5。</p>
@@ -785,7 +819,7 @@
     today: TODAY,
     dlt: [], d3: [], baseDlt: [], baseD3: [], liveDlt: null, liveD3: null,
     minutes: {}, intraday: {}, stages: null, stage: "morning", stageManual: null, stageInfo: null,
-    view: "lottery", holdings: [], alerts: [], alertMap: {}, storageOK: true,
+    view: "lottery", holdings: [], overnight: [], alerts: [], alertMap: {}, storageOK: true,
     indexK: {}, stockK: {}, quotes: {},
     universe: SNAP.universe || [],
     source: { dlt: "snapshot", d3: "snapshot", market: "snapshot", stock: "snapshot" },
@@ -1965,13 +1999,27 @@
       return r.m.ma5 > r.m.ma10 && r.price > r.m.ma10 && r.m.ret5 > 0 && r.dev5 < 0.08 && r.pct > -4 && r.m.dd20 > -18 && r.m.volRatio >= 0.85;
     }).sort(function (a, b) { return b.sScore - a.sScore; }).slice(0, 4);
 
+    var overnight = rows.map(function (r) {
+      var pos = r.s ? r.s.posInRange : (r.q.h > r.q.l ? (r.price - r.q.l) / (r.q.h - r.q.l) : 0.5);
+      r.posInRange = pos;
+      r.onScore = 100 * (
+        0.30 * norm(r.pct, 0.3, 5) + 0.25 * pos + 0.20 * norm(r.vr, 1, 3) +
+        0.15 * (r.m.last > r.m.ma5 ? 1 : 0.4) + 0.10 * (r.m.ma20Up ? 1 : 0.4)
+      );
+      return r;
+    }).filter(function (r) {
+      return r.pct >= 0.5 && r.pct <= 5 && r.posInRange >= 0.7 &&
+        r.m.last > r.m.ma5 && r.m.last > r.m.ma20 &&
+        r.vr >= 1 && r.vr <= 3 && r.turnover >= 1 && r.turnover <= 15;
+    }).sort(function (a, b) { return b.onScore - a.onScore; }).slice(0, 5);
+
     var minuteDates = {};
     Object.keys(state.intraday).forEach(function (c) { minuteDates[state.intraday[c].date] = 1; });
     var minuteDate = Object.keys(minuteDates).sort().pop() || "";
 
     return {
       morning: morning, midday: midday, tomorrow: tomorrow,
-      auction: auction, shortterm: shortterm,
+      auction: auction, shortterm: shortterm, overnight: overnight,
       sampleCount: rows.length,
       minuteDate: minuteDate,
       afternoonAvailable: aCnt > 0,
@@ -2323,6 +2371,20 @@
         map[h.code] = map[h.code] || "buy";
       }
     });
+    state.overnight.forEach(function (p) {
+      if (!p.isNext || p.price == null || p.expired) return;
+      if (p.price <= p.stop) {
+        out.push({ level: "stop", code: p.code, name: p.name, kind: "隔夜计划",
+          text: p.name + " 触发隔夜止损 " + p.stop.toFixed(2) + "（现价 " + p.price.toFixed(2) + "，" + fmtPct(p.pnlPct) + "），按规则离场" });
+        map[p.code] = "stop";
+      } else if (p.price >= p.target) {
+        out.push({ level: "buy", code: p.code, name: p.name, kind: "隔夜计划",
+          text: p.name + " 达 +2% 目标 " + p.target.toFixed(2) + "（现价 " + p.price.toFixed(2) + "），可卖出" });
+      } else if (overnightWindow() === "morning") {
+        out.push({ level: "buy", code: p.code, name: p.name, kind: "隔夜计划",
+          text: p.name + " 09:45 前必须了结（现价 " + p.price.toFixed(2) + "，" + fmtPct(p.pnlPct) + "）" });
+      }
+    });
     out.sort(function (a, b) { return (b.level === "stop" ? 1 : 0) - (a.level === "stop" ? 1 : 0); });
     state.alerts = out;
     state.alertMap = map;
@@ -2455,6 +2517,166 @@
     });
   }
 
+/* =========================================================
+     隔夜策略：尾盘买入 / 次日早盘卖出
+     ========================================================= */
+  var ON_KEY = "lst_overnight_v1";
+
+  function addDays(key, n) {
+    var d = new Date(key + "T00:00:00+08:00");
+    if (isNaN(d.getTime())) return key;
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function overnightWindow() {
+    var c = bjClock(), t = c.h * 60 + c.m;
+    if (c.dow === 0 || c.dow === 6) return "none";
+    if (t >= 885 && t < 900) return "tail";     // 14:45–15:00
+    if (t >= 570 && t < 585) return "morning";  // 09:30–09:45
+    return "none";
+  }
+
+  function loadOvernight() {
+    try {
+      var raw = localStorage.getItem(ON_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      state.overnight = Array.isArray(arr) ? arr.filter(function (p) {
+        return p && /^(sh|sz)\d{6}$/.test(p.code) && +p.buy > 0 && p.date;
+      }).map(function (p) {
+        return { code: p.code, name: p.name || p.code, buy: +p.buy, date: p.date,
+          target: +p.target || +p.buy * 1.02, stop: +p.stop || +p.buy * 0.985 };
+      }) : [];
+    } catch (e) { state.overnight = []; }
+  }
+
+  function saveOvernight() {
+    try {
+      localStorage.setItem(ON_KEY, JSON.stringify(state.overnight.map(function (p) {
+        return { code: p.code, name: p.name, buy: p.buy, date: p.date, target: p.target, stop: p.stop };
+      })));
+    } catch (e) {}
+  }
+
+  function loadOvernightData() {
+    if (!state.overnight.length) return Promise.resolve();
+    var need = state.overnight.map(function (p) { return p.code; })
+      .filter(function (c, i, a) { return a.indexOf(c) === i; });
+    var qMissing = need.filter(function (c) { return !state.quotes[c]; });
+    if (!qMissing.length) return Promise.resolve();
+    return fetchQuotes(qMissing).then(function (q) {
+      Object.keys(q).forEach(function (c) { state.quotes[c] = q[c]; });
+    }, function () {});
+  }
+
+  function buildOvernightPlans() {
+    state.overnight.forEach(function (p) {
+      var q = state.quotes[p.code];
+      p.price = q && q.p ? q.p : null;
+      p.pct = q ? q.c : null;
+      p.pnlPct = (p.price && p.buy) ? (p.price / p.buy - 1) * 100 : null;
+      p.isNext = p.date < TODAY;
+      p.expired = p.date < addDays(TODAY, -4);
+      if (p.price == null) { p.status = "行情缺失"; return; }
+      if (p.expired) { p.status = "已超过 4 天，请手工了结或删除"; return; }
+      if (!p.isNext) { p.status = "已记录，等次日 09:30–09:45 了结"; return; }
+      if (p.price <= p.stop) { p.status = "触发止损，按规则离场"; return; }
+      if (p.price >= p.target) { p.status = "已达 +2% 目标，可卖出"; return; }
+      p.status = overnightWindow() === "morning" ? "09:45 前择机了结" : "已过早盘窗口，按收盘价了结";
+    });
+  }
+
+  function onCandidateCard(r) {
+    return '<article class="sc" data-code="' + r.code + '">' +
+      '<div class="sc-top"><div><div class="sc-name">' + esc(r.name) + "</div>" +
+      '<div class="sc-code">' + esc(r.code) + " · " + esc(r.industry || "—") + "</div></div>" +
+      '<div class="sc-pct ' + cls(r.pct) + '">' + fmtPct(r.pct) + "</div></div>" +
+      '<div class="sc-ops">' +
+      '<div class="sc-op"><div class="k">买入参考</div><div class="v">' + r.price.toFixed(2) + "</div></div>" +
+      '<div class="sc-op"><div class="k">次日目标 +2%</div><div class="v">' + (r.price * 1.02).toFixed(2) + "</div></div>" +
+      '<div class="sc-op warn"><div class="k">次日止损 -1.5%</div><div class="v">' + (r.price * 0.985).toFixed(2) + "</div></div>" +
+      "</div>" +
+      '<div class="sc-rows">' +
+      '<span class="sc-row">日内位置 <b>' + Math.round(r.posInRange * 100) + "%</b></span>" +
+      '<span class="sc-row">量比 <b>' + r.vr.toFixed(2) + "</b></span>" +
+      '<span class="sc-row">换手 <b>' + r.turnover.toFixed(2) + "%</b></span>" +
+      '<span class="sc-row">趋势分 <b>' + r.trend + "</b></span>" +
+      "</div>" +
+      '<div class="on-act"><button class="btn primary" type="button" data-on-add="' + r.code + '">记入明日卖出计划</button></div>' +
+      "</article>";
+  }
+
+  function onPlanCard(p, i) {
+    var pnlCls = p.pnlPct == null ? "flat" : cls(p.pnlPct);
+    return '<article class="sc" data-code="' + p.code + '">' +
+      '<div class="sc-top"><div><div class="sc-name">' + esc(p.name) + "</div>" +
+      '<div class="sc-code">' + esc(p.code) + " · 记录日 " + esc(p.date) + "</div></div>" +
+      '<div class="sc-pct ' + pnlCls + '">' + (p.pnlPct == null ? "—" : fmtPct(p.pnlPct)) + "</div></div>" +
+      '<div class="sc-ops">' +
+      '<div class="sc-op"><div class="k">买入价</div><div class="v">' + p.buy.toFixed(2) + "</div></div>" +
+      '<div class="sc-op"><div class="k">目标 +2%</div><div class="v">' + p.target.toFixed(2) + "</div></div>" +
+      '<div class="sc-op warn"><div class="k">止损 -1.5%</div><div class="v">' + p.stop.toFixed(2) + "</div></div>" +
+      "</div>" +
+      '<div class="sc-rows">' +
+      '<span class="sc-row">现价 <b>' + (p.price == null ? "—" : p.price.toFixed(2)) + "</b></span>" +
+      '<span class="sc-row">今日 <b class="' + cls(p.pct) + '">' + (p.pct == null ? "—" : fmtPct(p.pct)) + "</b></span>" +
+      "</div>" +
+      '<p class="sc-why">' + esc(p.status) + "</p>" +
+      '<p class="sc-foot"><button class="btn hold-del" type="button" data-on-del="' + i + '">删除</button></p>' +
+      "</article>";
+  }
+
+  function renderOvernight() {
+    var st = state.stages;
+    var win = overnightWindow();
+    var cands = (st && st.overnight) ? st.overnight : [];
+    var plans = state.overnight || [];
+    var label = win === "tail" ? "尾盘窗口 14:45–15:00"
+      : win === "morning" ? "早盘了结窗口 09:30–09:45"
+        : "非策略窗口";
+    if ($("on-now")) $("on-now").textContent = label + " · 北京时间 " + (state.stageInfo ? state.stageInfo.clock : "");
+    var dot = $("on-dot");
+    if (dot) dot.className = "dot " + (win === "none" ? "cache" : "live");
+
+    $("on-cand-hint").textContent = "涨幅 0.5–5%、日内位置 ≥70%、站上 MA5 与 MA20、量比 1–3、换手 1–15% 的 " + cands.length + " 只";
+    $("on-cand-tag").textContent = win === "tail" ? "14:45–15:00 可执行" : "窗口未到，仅供预演";
+    $("on-cand-cards").innerHTML = cands.length
+      ? cands.map(onCandidateCard).join("")
+      : '<div class="empty">当前没有同时满足「尾盘不走弱 + 趋势向上 + 量能适度」的标的，今天不做隔夜。</div>';
+
+    $("on-plan-tag").textContent = plans.length ? plans.filter(function (p) { return p.isNext; }).length + " 笔待了结" : "暂无计划";
+    $("on-plan-hint").textContent = plans.length ? "点「删除」可移出计划；次日 09:45 前必须了结" : "还没有记录，先在左侧把候选记入";
+    $("on-plan-cards").innerHTML = plans.length
+      ? plans.map(onPlanCard).join("")
+      : '<div class="empty">暂无隔夜计划。尾盘记入后，次日早盘打开页面就会在提醒条和这里同步提示卖出。</div>';
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-on-add]"), function (b) {
+      b.addEventListener("click", function () {
+        var code = b.getAttribute("data-on-add");
+        var item = cands.filter(function (x) { return x.code === code; })[0];
+        if (!item) return;
+        if (state.overnight.some(function (p) { return p.code === code && p.date === TODAY; })) return;
+        state.overnight.push({ code: code, name: item.name, buy: item.price, date: TODAY,
+          target: item.price * 1.02, stop: item.price * 0.985 });
+        saveOvernight();
+        buildOvernightPlans();
+        renderOvernight();
+        buildAlerts();
+        renderAlerts();
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-on-del]"), function (b) {
+      b.addEventListener("click", function () {
+        var i = parseInt(b.getAttribute("data-on-del"), 10);
+        state.overnight.splice(i, 1);
+        saveOvernight();
+        buildOvernightPlans();
+        renderOvernight();
+        buildAlerts();
+        renderAlerts();
+      });
+    });
+  }
   function computeAll() {
     // 彩票
     if (state.dlt.length) {
@@ -2509,6 +2731,7 @@
     if (state.stageManual) state.stage = state.stageManual;
     state.stages = buildStages();
     buildHoldings();
+    buildOvernightPlans();
     buildAlerts();
   }
 
@@ -2522,6 +2745,7 @@
     renderSession();
     renderShortterm();
     renderHoldings();
+    renderOvernight();
     renderAlerts();
     renderBanners();
   }
@@ -2597,6 +2821,8 @@
       return loadMinutes().then(function () {
         return loadHoldingsData();
       }).then(function () {
+        return loadOvernightData();
+      }).then(function () {
       computeAll();
       renderAll();
       var stockLive = state.source.stock === "live";
@@ -2634,6 +2860,7 @@
     state.quotes = SNAP.quotes || {};
     state.fetchedAt = SNAP.fetchedAt || "—";
     loadHoldings();
+    loadOvernight();
     bindHoldForm();
     bindViewSwitch();
     setView("lottery");
