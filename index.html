@@ -261,6 +261,40 @@
     .stage-tab{padding:10px 11px}
     .stage-tab .st-s{font-size:11px}
   }
+  /* ---------- 顶部视图切换 ---------- */
+  .viewswitch{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px;flex:none}
+  .viewswitch button{font:inherit;font-size:13px;padding:6px 15px;border:0;background:transparent;color:var(--text-2);border-radius:8px;cursor:pointer;font-weight:650}
+  .viewswitch button[aria-selected="true"]{background:rgba(240,190,90,.16);color:var(--gold)}
+  body[data-view="lottery"] #session,body[data-view="lottery"] #shortterm,body[data-view="lottery"] #market,body[data-view="lottery"] #picks,body[data-view="lottery"] #holdings{display:none}
+  body[data-view="stock"] #today,body[data-view="stock"] #lottery{display:none}
+  /* ---------- 提醒条 ---------- */
+  .alertbar{position:fixed;left:0;right:0;bottom:0;z-index:45;padding:0 12px 12px;pointer-events:none}
+  .alertbar-in{pointer-events:auto;max-width:1180px;margin:0 auto;background:linear-gradient(180deg,#1b2330,#12171f);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -18px rgba(0,0,0,.9);padding:10px 12px}
+  .alertbar-head{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-2)}
+  .alertbar-head b{color:var(--text);font-size:13px}
+  .alert-dot{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px rgba(255,91,91,.18);flex:none}
+  .alert-stop-tag{font-size:11px;color:#ffb3b3;border:1px solid rgba(255,91,91,.35);background:rgba(255,91,91,.1);border-radius:6px;padding:1px 7px}
+  .alert-close{margin-left:auto;background:transparent;border:0;color:var(--text-3);font-size:18px;line-height:1;cursor:pointer;padding:2px 8px}
+  .alertbar-list{display:grid;gap:5px;margin-top:8px}
+  .alert-item{display:flex;gap:8px;align-items:baseline;text-align:left;font:inherit;font-size:12.5px;color:var(--text-2);background:rgba(255,255,255,.02);border:1px solid var(--line-soft);border-left:3px solid var(--gold);border-radius:8px;padding:7px 10px;cursor:pointer}
+  .alert-item.stop{border-left-color:var(--up);color:#ffc7c7}
+  .ai-kind{font-size:10.5px;color:var(--text-3);flex:none}
+  /* ---------- 持仓录入 ---------- */
+  .hold-form{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:10px;align-items:end}
+  .hf{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--text-3)}
+  .hf input{font:inherit;font-size:13px;color:var(--text);background:var(--bg-2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}
+  .hf input:focus{border-color:rgba(240,190,90,.5);outline:none}
+  .btn.primary{background:linear-gradient(180deg,#f0be5a,#d6a444);border-color:#c9973a;color:#12100a;font-weight:700}
+  .btn.primary:hover{filter:brightness(1.05)}
+  .hold-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+  .hold-del{margin-left:6px;font-size:11px;padding:2px 8px}
+  .sc-badge{display:inline-block;font-size:10.5px;font-weight:600;border-radius:5px;padding:1px 6px;margin-left:8px;vertical-align:middle}
+  .sc-badge.stop{background:rgba(255,91,91,.16);color:#ffb3b3;border:1px solid rgba(255,91,91,.4)}
+  .sc-badge.buy{background:rgba(240,190,90,.16);color:#f7d79a;border:1px solid rgba(240,190,90,.4)}
+  .sc.alert-stop{border-color:rgba(255,91,91,.55)}
+  .sc.alert-buy{border-color:rgba(240,190,90,.55)}
+  @media (max-width:980px){ .hold-form{grid-template-columns:1fr 1fr} .hold-list{grid-template-columns:1fr} }
+  @media (max-width:600px){ .hold-form{grid-template-columns:1fr} .viewswitch button{padding:6px 12px;font-size:12.5px} }
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important}
   }
@@ -279,13 +313,18 @@
         <small>彩票走势 · 大盘选股</small>
       </span>
     </div>
+    <div class="viewswitch" role="tablist" aria-label="内容切换">
+      <button type="button" role="tab" data-view="lottery" aria-selected="true">彩票</button>
+      <button type="button" role="tab" data-view="stock" aria-selected="false">股票</button>
+    </div>
     <nav class="nav" aria-label="页面导航">
-      <a href="#today">今日推荐</a>
-      <a href="#lottery">彩票走势</a>
-      <a href="#session">时段主线</a>
-      <a href="#shortterm">短线操作</a>
-      <a href="#market">大盘环境</a>
-      <a href="#picks">趋势个股</a>
+      <a href="#today" data-view="lottery">今日推荐</a>
+      <a href="#lottery" data-view="lottery">彩票走势</a>
+      <a href="#session" data-view="stock">时段主线</a>
+      <a href="#shortterm" data-view="stock">短线操作</a>
+      <a href="#holdings" data-view="stock">我的持仓</a>
+      <a href="#market" data-view="stock">大盘环境</a>
+      <a href="#picks" data-view="stock">趋势个股</a>
       <a href="#method">方法与披露</a>
     </nav>
     <div class="status">
@@ -589,6 +628,29 @@
     </div>
   </section>
 
+
+  <section class="section" id="holdings" aria-labelledby="holdings-title">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">My Positions</p>
+        <h2 id="holdings-title">已买股票：成本、浮盈亏与止损提醒</h2>
+        <p class="lead">把你实际买入的代码、成本价、数量填进来，页面会用同一套均线口径算出参考买入区与止损位；现价跌破止损位、或回到买入区间时，底部提醒条会亮起。数据只保存在这台设备的浏览器里，不上传任何服务器。</p>
+      </div>
+      <span class="pill" role="status" aria-live="polite"><span class="dot cache" id="hold-dot"></span><span id="hold-num">暂无持仓</span></span>
+    </div>
+    <div class="panel">
+      <div class="hold-form">
+        <label class="hf">股票代码<input id="hold-code" type="text" placeholder="600519 或 sh600519" autocomplete="off" spellcheck="false"></label>
+        <label class="hf">成本价<input id="hold-cost" type="number" step="0.001" min="0" placeholder="如 1450.00"></label>
+        <label class="hf">数量（股）<input id="hold-qty" type="number" step="100" min="1" placeholder="如 100"></label>
+        <button class="btn primary" type="button" id="hold-add">加入持仓</button>
+      </div>
+      <p class="hint" id="hold-msg" role="status" style="margin-top:10px"></p>
+      <div class="hold-list" id="hold-cards"></div>
+    </div>
+    <p class="stage-note">提醒口径：止损位取 <b>MA10 下方 0.5%</b>，参考买入区取 <b>MA5 ±2%</b>；现价跌破止损位标红并置顶，回到买入区标金。提醒只在页面打开时计算，不会发推送；这里的“买入区”只用于提示价格位置，不代表投资建议。</p>
+  </section>
+
   <section class="section" id="method" aria-labelledby="method-title">
     <div class="section-head">
       <div>
@@ -607,6 +669,7 @@
         <h3>股票怎么筛</h3>
         <p>先算大盘：收盘价与 MA20 / MA60 的相对位置、MA20 斜率、近 20 日涨跌、样本股涨跌家数，得出市场温度与操作基调。</p>
         <p>竞价与短线是两套独立口径：竞价用开盘缺口、竞价首笔成交额占昨日成交额的比例、开盘后是否守住开盘价；短线用 MA5/MA10 结构、近 5 日涨幅、量能比与偏离度，并给出买入区间、止损位、目标位与 2–5 日持有周期。</p>
+        <p>提醒口径与短线一致：止损位取 MA10 下方 0.5%，参考买入区取 MA5 ±2%；持仓与短线候选共用这套口径，因此同一只票在哪个区间一眼能对上。</p>
         <p>时段主线在同一套因子上做时间切片：早盘看开盘缺口、日内均价上方的时间占比与量比；午盘看午后相对上午收盘的承接；收盘后做强弱结构与行业排序；明日推荐把趋势分、当日强度、量能合成观察分。</p>
         <p>再算个股：站上 MA20 与 MA60（18 / 14 分）、MA5&gt;MA10&gt;MA20（10 分）、MA20&gt;MA60（8 分）、MA20 上抬（8 分）、20 日涨幅（最多 18 分）、量能比 1–2.2 倍（8 分）、距 60 日高点 6% 内（6 分）、20 日回撤小于 12%（6 分）。总分 ≥62 进入观察名单，按分排序取前 5。</p>
       </div>
@@ -722,6 +785,7 @@
     today: TODAY,
     dlt: [], d3: [], baseDlt: [], baseD3: [], liveDlt: null, liveD3: null,
     minutes: {}, intraday: {}, stages: null, stage: "morning", stageManual: null, stageInfo: null,
+    view: "lottery", holdings: [], alerts: [], alertMap: {}, storageOK: true,
     indexK: {}, stockK: {}, quotes: {},
     universe: SNAP.universe || [],
     source: { dlt: "snapshot", d3: "snapshot", market: "snapshot", stock: "snapshot" },
@@ -1884,9 +1948,9 @@
 
     var shortterm = rows.map(function (r) {
       var dev = r.price / r.m.ma5 - 1;
-      var lo = Math.min(r.price, r.m.ma5) * 0.995;
-      var hi = Math.max(lo, Math.min(r.price, r.m.ma5 * 1.02));
-      var stop = Math.min(r.m.ma10 * 0.995, r.price * 0.96);
+      var lo = r.m.ma5 * 0.98;
+      var hi = r.m.ma5 * 1.02;
+      var stop = Math.min(r.m.ma10 * 0.995, r.m.ma5 * 0.97);
       var tgt = r.m.high60 > r.price * 1.03 && r.m.high60 < r.price * 1.12 ? r.m.high60 : r.price * 1.08;
       r.dev5 = dev; r.buyLo = lo; r.buyHi = hi; r.stop = stop; r.target = tgt;
       r.sScore = 100 * (
@@ -1996,7 +2060,8 @@
   }
 
   function shorttermCard(r) {
-    return '<article class="sc">' +
+    var lvl = (state.alertMap && state.alertMap[r.code]) || "";
+    return '<article class="sc' + (lvl ? " alert-" + lvl : "") + '" data-code="' + r.code + '">' +
       '<div class="sc-top"><div><div class="sc-name">' + esc(r.name) + "</div>" +
       '<div class="sc-code">' + esc(r.code) + " · " + esc(r.industry || "—") + "</div></div>" +
       '<div class="sc-pct ' + cls(r.pct) + '">' + fmtPct(r.pct) + "</div></div>" +
@@ -2131,6 +2196,265 @@
       : '<div class="empty" style="grid-column:1/-1">没有同时满足趋势与当日强度的标的，明天以观察为主，不主动开仓。</div>';
     $("tomorrow-note").innerHTML = "明日推荐不是买入指令，而是<b>次日开盘的验证清单</b>：先看大盘开盘方向，再看这些标的能否守住各自 MA20、开盘半小时量能是否比今天同期更大。若开盘就跌破 MA20 且放量，视为趋势被破坏，直接从名单里剔除。彩票与股票内容都只作研究参考，不构成投资建议。";
   }
+/* =========================================================
+     视图切换 / 持仓 / 提醒
+     ========================================================= */
+  var LS_KEY = "lst_holdings_v1";
+
+  function setView(v) {
+    state.view = v;
+    document.body.setAttribute("data-view", v);
+    Array.prototype.forEach.call(document.querySelectorAll(".viewswitch button"), function (b) {
+      b.setAttribute("aria-selected", b.getAttribute("data-view") === v ? "true" : "false");
+    });
+    setTimeout(function () {
+      redrawCharts();
+      if (v === "stock" && state.market) renderMarket();
+    }, 80);
+  }
+
+  function normalizeCode(v) {
+    var s = String(v || "").trim().toLowerCase();
+    if (/^(sh|sz)\d{6}$/.test(s)) return s;
+    if (/^\d{6}$/.test(s)) return (s.charAt(0) === "6" || s.charAt(0) === "9" ? "sh" : "sz") + s;
+    return null;
+  }
+
+  function loadHoldings() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      state.holdings = Array.isArray(arr) ? arr.filter(function (h) {
+        return h && /^(sh|sz)\d{6}$/.test(h.code) && +h.cost > 0 && +h.qty > 0;
+      }).map(function (h) { return { code: h.code, cost: +h.cost, qty: +h.qty }; }) : [];
+      state.storageOK = true;
+    } catch (e) {
+      state.holdings = [];
+      state.storageOK = false;
+    }
+  }
+
+  function saveHoldings() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(state.holdings.map(function (h) {
+        return { code: h.code, cost: h.cost, qty: h.qty };
+      })));
+      state.storageOK = true;
+    } catch (e) {
+      state.storageOK = false;
+    }
+  }
+
+  function loadHoldingsData() {
+    if (!state.holdings.length) return Promise.resolve();
+    var need = state.holdings.map(function (h) { return h.code; })
+      .filter(function (c, i, a) { return a.indexOf(c) === i; });
+    var qMissing = need.filter(function (c) { return !state.quotes[c]; });
+    var kMissing = need.filter(function (c) { return !state.stockK[c] || state.stockK[c].length < 65; });
+    var jobs = [];
+    if (qMissing.length) {
+      jobs.push(fetchQuotes(qMissing).then(function (q) {
+        Object.keys(q).forEach(function (c) { state.quotes[c] = q[c]; });
+      }, function () {}));
+    }
+    if (kMissing.length) {
+      jobs.push(poolAll(kMissing, function (c) { return fetchKline(c, 140); }, 4).then(function (res) {
+        kMissing.forEach(function (c, i) {
+          if (res.rows[i] && res.rows[i].length > 65) state.stockK[c] = res.rows[i];
+        });
+      }));
+    }
+    return Promise.all(jobs);
+  }
+
+  function buildHoldings() {
+    state.holdings.forEach(function (h) {
+      var q = state.quotes[h.code];
+      var ks = state.stockK[h.code];
+      h.name = q ? q.n : h.code;
+      h.price = q && q.p ? q.p : null;
+      h.pct = q ? q.c : null;
+      h.m = klineMetrics(ks);
+      if (h.m) {
+        var ma5 = h.m.ma5, ma10 = h.m.ma10, base = h.price || ma5;
+        h.buyLo = Math.min(base, ma5) * 0.995;
+        h.buyHi = Math.max(h.buyLo, Math.min(base, ma5 * 1.02));
+        h.stop = ma10 * 0.995;
+        h.ma20 = h.m.ma20;
+      } else {
+        h.buyLo = h.buyHi = h.stop = h.ma20 = null;
+      }
+      if (h.price && h.cost) {
+        h.pnl = (h.price - h.cost) * h.qty;
+        h.pnlPct = (h.price / h.cost - 1) * 100;
+        h.market = h.price * h.qty;
+        h.costAmt = h.cost * h.qty;
+      } else {
+        h.pnl = h.pnlPct = h.market = h.costAmt = null;
+      }
+    });
+  }
+
+  function buildAlerts() {
+    var out = [], map = {};
+    var st = state.stages;
+    if (st && st.shortterm) {
+      st.shortterm.forEach(function (r) {
+        if (r.price <= r.stop) {
+          out.push({ level: "stop", code: r.code, name: r.name, kind: "短线候选",
+            text: r.name + " 跌破止损位 " + r.stop.toFixed(2) + "（现价 " + r.price.toFixed(2) + "），按纪律离场" });
+          map[r.code] = "stop";
+        } else if (r.price <= r.buyHi) {
+          out.push({ level: "buy", code: r.code, name: r.name, kind: "短线候选",
+            text: r.name + " 进入买入区间 " + r.buyLo.toFixed(2) + "–" + r.buyHi.toFixed(2) + "（现价 " + r.price.toFixed(2) + "）" });
+          map[r.code] = map[r.code] || "buy";
+        }
+      });
+    }
+    state.holdings.forEach(function (h) {
+      if (h.price == null || h.stop == null) return;
+      if (h.price <= h.stop) {
+        out.push({ level: "stop", code: h.code, name: h.name, kind: "持仓",
+          text: h.name + " 持仓跌破止损位 " + h.stop.toFixed(2) + "（现价 " + h.price.toFixed(2) + "，浮动 " + fmtPct(h.pnlPct) + "）" });
+        map[h.code] = "stop";
+      } else if (h.price <= h.buyHi) {
+        out.push({ level: "buy", code: h.code, name: h.name, kind: "持仓",
+          text: h.name + " 回到买入区间 " + h.buyLo.toFixed(2) + "–" + h.buyHi.toFixed(2) + "（现价 " + h.price.toFixed(2) + "）" });
+        map[h.code] = map[h.code] || "buy";
+      }
+    });
+    out.sort(function (a, b) { return (b.level === "stop" ? 1 : 0) - (a.level === "stop" ? 1 : 0); });
+    state.alerts = out;
+    state.alertMap = map;
+    return out;
+  }
+
+  function renderAlerts() {
+    var bar = $("alertbar");
+    if (!bar) return;
+    var list = state.alerts || [];
+    if (!list.length || state.view !== "stock") { bar.hidden = true; bar.innerHTML = ""; return; }
+    var stops = list.filter(function (a) { return a.level === "stop"; }).length;
+    bar.hidden = false;
+    bar.innerHTML = '<div class="alertbar-in">' +
+      '<div class="alertbar-head"><span class="alert-dot"></span><b>' + list.length + " 条价格提醒</b>" +
+      (stops ? '<span class="alert-stop-tag">' + stops + " 条止损</span>" : "") +
+      '<button class="alert-close" type="button" aria-label="收起提醒">×</button></div>' +
+      '<div class="alertbar-list">' + list.slice(0, 4).map(function (a) {
+        return '<button class="alert-item ' + a.level + '" type="button" data-goto="' + esc(a.code) + '">' +
+          '<span class="ai-kind">' + esc(a.kind) + "</span>" + esc(a.text) + "</button>";
+      }).join("") + "</div></div>";
+    var close = bar.querySelector(".alert-close");
+    if (close) close.addEventListener("click", function () { bar.hidden = true; });
+    Array.prototype.forEach.call(bar.querySelectorAll(".alert-item"), function (b) {
+      b.addEventListener("click", function () {
+        var code = b.getAttribute("data-goto");
+        var el = document.querySelector('[data-code="' + code + '"]');
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    });
+  }
+
+  function holdCard(h, i) {
+    var lvl = (state.alertMap && state.alertMap[h.code]) || "";
+    var pnlCls = h.pnl == null ? "flat" : cls(h.pnl);
+    return '<article class="sc hold' + (lvl ? " alert-" + lvl : "") + '" data-code="' + h.code + '">' +
+      '<div class="sc-top"><div><div class="sc-name">' + esc(h.name) +
+      (lvl ? '<span class="sc-badge ' + lvl + '">' + (lvl === "stop" ? "跌破止损" : "在买入区") + "</span>" : "") +
+      "</div>" +
+      '<div class="sc-code">' + esc(h.code) + " · 成本 " + h.cost.toFixed(2) + " · " + h.qty + " 股</div></div>" +
+      '<div class="sc-pct ' + pnlCls + '">' + (h.pnlPct == null ? "—" : fmtPct(h.pnlPct)) + "</div></div>" +
+      '<div class="sc-rows">' +
+      '<span class="sc-row">现价 <b>' + (h.price == null ? "—" : h.price.toFixed(2)) + "</b></span>" +
+      '<span class="sc-row">浮动盈亏 <b class="' + pnlCls + '">' + (h.pnl == null ? "—" : (h.pnl >= 0 ? "+" : "") + h.pnl.toFixed(0) + " 元") + "</b></span>" +
+      '<span class="sc-row">市值 <b>' + (h.market == null ? "—" : h.market.toFixed(0) + " 元") + "</b></span>" +
+      "</div>" +
+      '<div class="sc-ops">' +
+      '<div class="sc-op"><div class="k">参考买入区</div><div class="v">' + (h.buyLo == null ? "—" : h.buyLo.toFixed(2) + " – " + h.buyHi.toFixed(2)) + "</div></div>" +
+      '<div class="sc-op warn"><div class="k">止损位</div><div class="v">' + (h.stop == null ? "—" : h.stop.toFixed(2)) + "</div></div>" +
+      '<div class="sc-op"><div class="k">MA20</div><div class="v">' + (h.ma20 == null ? "—" : h.ma20.toFixed(2)) + "</div></div>" +
+      "</div>" +
+      '<p class="sc-foot">' + (lvl === "stop"
+        ? "现价已跌破止损位，按纪律应当离场，不摊平、不补仓。"
+        : lvl === "buy"
+          ? "现价回到买入区间，是否加仓由你自己决定；加仓也别超过原计划仓位。"
+          : "现价未触及买入区与止损位，继续持有观察即可。") +
+      ' <button class="btn hold-del" type="button" data-del="' + i + '">删除</button></p>' +
+      "</article>";
+  }
+
+  function renderHoldings() {
+    var n = state.holdings.length;
+    if ($("hold-num")) $("hold-num").textContent = n ? n + " 笔持仓" : "暂无持仓";
+    var dot = $("hold-dot");
+    if (dot) dot.className = "dot " + (n ? "live" : "cache");
+    var host = $("hold-cards");
+    if (!host) return;
+    if (!n) {
+      host.innerHTML = '<div class="empty">还没有录入持仓。填入代码、成本价和数量后点「加入持仓」，之后每次打开页面都会自动检查止损位与买入区间。</div>';
+    } else {
+      host.innerHTML = state.holdings.map(holdCard).join("");
+      Array.prototype.forEach.call(host.querySelectorAll("[data-del]"), function (b) {
+        b.addEventListener("click", function () {
+          var i = parseInt(b.getAttribute("data-del"), 10);
+          state.holdings.splice(i, 1);
+          saveHoldings();
+          buildHoldings();
+          buildAlerts();
+          renderHoldings();
+          renderAlerts();
+        });
+      });
+    }
+    var msg = $("hold-msg");
+    if (msg && !state.storageOK) {
+      msg.textContent = "当前浏览器不支持本地保存（可能处于受限预览环境），刷新后持仓会丢失。用浏览器直接打开线上地址即可正常保存。";
+    }
+  }
+
+  function bindHoldForm() {
+    var btn = $("hold-add");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var msg = $("hold-msg");
+      var code = normalizeCode($("hold-code").value);
+      var cost = parseFloat($("hold-cost").value);
+      var qty = parseInt($("hold-qty").value, 10);
+      if (!code) { msg.textContent = "代码格式不对：请输入 600519 或 sh600519 这种形式"; return; }
+      if (!(cost > 0)) { msg.textContent = "成本价需要大于 0"; return; }
+      if (!(qty > 0)) { msg.textContent = "数量需要是正整数，A 股通常按 100 股递增"; return; }
+      if (state.holdings.some(function (h) { return h.code === code; })) {
+        msg.textContent = "这只已经在持仓里了，先删掉再重新添加"; return;
+      }
+      state.holdings.push({ code: code, cost: cost, qty: qty });
+      saveHoldings();
+      $("hold-code").value = ""; $("hold-cost").value = ""; $("hold-qty").value = "";
+      msg.textContent = "已加入，正在拉取这只的行情…";
+      loadHoldingsData().then(function () {
+        buildHoldings();
+        buildAlerts();
+        renderHoldings();
+        renderAlerts();
+        msg.textContent = "已加入并更新：现价、买入区与止损位按日线均线实时计算";
+      });
+    });
+  }
+  function bindViewSwitch() {
+    Array.prototype.forEach.call(document.querySelectorAll(".viewswitch button"), function (b) {
+      b.addEventListener("click", function () { setView(b.getAttribute("data-view")); renderAlerts(); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".nav a"), function (a) {
+      a.addEventListener("click", function (ev) {
+        var v = a.getAttribute("data-view");
+        if (v && v !== state.view) {
+          ev.preventDefault(); setView(v); renderAlerts();
+          var id = a.getAttribute("href");
+          setTimeout(function () { var el = document.querySelector(id); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 120);
+        }
+      });
+    });
+  }
+
   function computeAll() {
     // 彩票
     if (state.dlt.length) {
@@ -2184,6 +2508,8 @@
     state.stageInfo = stageInfo();
     if (state.stageManual) state.stage = state.stageManual;
     state.stages = buildStages();
+    buildHoldings();
+    buildAlerts();
   }
 
   function renderAll() {
@@ -2195,6 +2521,8 @@
     renderPicks();
     renderSession();
     renderShortterm();
+    renderHoldings();
+    renderAlerts();
     renderBanners();
   }
 
@@ -2267,6 +2595,8 @@
         return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
       })();
       return loadMinutes().then(function () {
+        return loadHoldingsData();
+      }).then(function () {
       computeAll();
       renderAll();
       var stockLive = state.source.stock === "live";
@@ -2303,6 +2633,10 @@
     state.stockK = SNAP.stockK || {};
     state.quotes = SNAP.quotes || {};
     state.fetchedAt = SNAP.fetchedAt || "—";
+    loadHoldings();
+    bindHoldForm();
+    bindViewSwitch();
+    setView("lottery");
     computeAll();
     renderAll();
     setStatus("load", "正在获取实时数据");
@@ -2320,4 +2654,5 @@
 })();
 </script>
 
+<div class="alertbar" id="alertbar" aria-live="polite" hidden></div>
 </body></html>
