@@ -298,6 +298,20 @@
   .on-cards{grid-template-columns:1fr}
   .on-act{display:flex;justify-content:flex-end;margin-top:9px}
   .on-act .btn{font-size:12px;padding:5px 12px}
+  .sc-sell{display:flex;gap:8px;align-items:baseline;margin-top:9px;padding:7px 9px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);border-left:3px solid var(--text-3)}
+  .sc-sell .ss-tag{font-size:11.5px;font-weight:700;white-space:nowrap}
+  .sc-sell .ss-text{font-size:11.5px;color:var(--text-2);line-height:1.55}
+  .sc-sell.stop{border-left-color:var(--up)}
+  .sc-sell.stop .ss-tag{color:#ffb3b3}
+  .sc-sell.take{border-left-color:var(--down)}
+  .sc-sell.take .ss-tag{color:#9fe7cd}
+  .sc-sell.trim,.sc-sell.weak{border-left-color:var(--gold)}
+  .sc-sell.trim .ss-tag,.sc-sell.weak .ss-tag{color:#f7d79a}
+  .sc-sell.hold{border-left-color:var(--blue)}
+  .sc-sell.hold .ss-tag{color:#bcd6ff}
+  .sc.alert-sell{border-color:rgba(240,190,90,.55)}
+  .sc-badge.sell{background:rgba(240,190,90,.16);color:#f7d79a;border:1px solid rgba(240,190,90,.4)}
+  .alert-item.sell{border-left-color:var(--gold);color:#f7d79a}
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important}
   }
@@ -703,6 +717,7 @@
         <p>先算大盘：收盘价与 MA20 / MA60 的相对位置、MA20 斜率、近 20 日涨跌、样本股涨跌家数，得出市场温度与操作基调。</p>
         <p>竞价与短线是两套独立口径：竞价用开盘缺口、竞价首笔成交额占昨日成交额的比例、开盘后是否守住开盘价；短线用 MA5/MA10 结构、近 5 日涨幅、量能比与偏离度，并给出买入区间、止损位、目标位与 2–5 日持有周期。</p>
         <p>隔夜策略是独立口径：尾盘看当日涨幅、日内位置、均线位置与量能是否「强而不过热」，次日只按三条纪律了结（+2% 止盈、-1.5% 止损、09:45 时间止损），名单记在本地，供次日早盘提醒。</p>
+        <p>持仓卖出建议分四档：跌破 MA10 防线 → 止损离场；浮盈 ≥15% → 先卖一半、剩余以 MA10 跟踪；浮盈 ≥8% 但跌回 MA5 下方 → 减仓一半；跌破 MA20 或 MA20 走平、下弯 → 趋势转弱、反弹减仓；都没触发则继续持有。</p>
         <p>提醒口径与短线一致：止损位取 MA10 下方 0.5%，参考买入区取 MA5 ±2%；持仓与短线候选共用这套口径，因此同一只票在哪个区间一眼能对上。</p>
         <p>时段主线在同一套因子上做时间切片：早盘看开盘缺口、日内均价上方的时间占比与量比；午盘看午后相对上午收盘的承接；收盘后做强弱结构与行业排序；明日推荐把趋势分、当日强度、量能合成观察分。</p>
         <p>再算个股：站上 MA20 与 MA60（18 / 14 分）、MA5&gt;MA10&gt;MA20（10 分）、MA20&gt;MA60（8 分）、MA20 上抬（8 分）、20 日涨幅（最多 18 分）、量能比 1–2.2 倍（8 分）、距 60 日高点 6% 内（6 分）、20 日回撤小于 12%（6 分）。总分 ≥62 进入观察名单，按分排序取前 5。</p>
@@ -2315,6 +2330,39 @@
     return Promise.all(jobs);
   }
 
+  function sellAdvice(h) {
+    if (h.price == null || h.stop == null || !h.ma20) {
+      return { level: "", title: "数据不足", text: "行情或均线缺失，暂时无法给出卖出建议。" };
+    }
+    var pnl = h.pnlPct;
+    if (h.price <= h.stop) {
+      if (pnl != null && pnl > 0) {
+        return { level: "stop", title: "破位止盈",
+          text: "现价 " + h.price.toFixed(2) + " 跌破 MA10 防线 " + h.stop.toFixed(2) + "，虽仍有 " + fmtPct(pnl) + " 浮盈，但趋势已破位，按纪律了结。" };
+      }
+      return { level: "stop", title: "止损离场",
+        text: "现价 " + h.price.toFixed(2) + " 已跌破 MA10 防线 " + h.stop.toFixed(2) + "，按纪律清仓，不摊平、不补仓。" };
+    }
+    if (pnl != null && pnl >= 15) {
+      return { level: "take", title: "分批止盈",
+        text: "浮盈 " + fmtPct(pnl) + "，先卖出一半锁定利润；剩余仓位以 MA10（" + h.ma10.toFixed(2) + "）作为跟踪止损。" };
+    }
+    if (pnl != null && pnl >= 8 && h.ma5 && h.price < h.ma5) {
+      return { level: "trim", title: "减仓",
+        text: "浮盈 " + fmtPct(pnl) + " 但股价已跌回 MA5（" + h.ma5.toFixed(2) + "）下方，短线转弱，建议减仓一半。" };
+    }
+    if (h.price < h.ma20) {
+      return { level: "weak", title: "趋势转弱",
+        text: "股价跌破 MA20（" + h.ma20.toFixed(2) + "），中期防守线上移，反弹到 MA20 附近减仓。" };
+    }
+    if (h.m && !h.m.ma20Up) {
+      return { level: "weak", title: "趋势转弱",
+        text: "MA20 走平或下弯，上涨动能减弱，逢冲高减仓、不追高。" };
+    }
+    return { level: "hold", title: "继续持有",
+      text: "股价在 MA20（" + h.ma20.toFixed(2) + "）上方，距其还有 " + ((h.price / h.ma20 - 1) * 100).toFixed(1) + "% 空间；跌破 MA20 再减仓。" };
+  }
+
   function buildHoldings() {
     state.holdings.forEach(function (h) {
       var q = state.quotes[h.code];
@@ -2329,8 +2377,10 @@
         h.buyHi = Math.max(h.buyLo, Math.min(base, ma5 * 1.02));
         h.stop = ma10 * 0.995;
         h.ma20 = h.m.ma20;
+        h.ma5 = ma5;
+        h.ma10 = ma10;
       } else {
-        h.buyLo = h.buyHi = h.stop = h.ma20 = null;
+        h.buyLo = h.buyHi = h.stop = h.ma20 = h.ma5 = h.ma10 = null;
       }
       if (h.price && h.cost) {
         h.pnl = (h.price - h.cost) * h.qty;
@@ -2340,6 +2390,7 @@
       } else {
         h.pnl = h.pnlPct = h.market = h.costAmt = null;
       }
+      h.sell = sellAdvice(h);
     });
   }
 
@@ -2363,8 +2414,12 @@
       if (h.price == null || h.stop == null) return;
       if (h.price <= h.stop) {
         out.push({ level: "stop", code: h.code, name: h.name, kind: "持仓",
-          text: h.name + " 持仓跌破止损位 " + h.stop.toFixed(2) + "（现价 " + h.price.toFixed(2) + "，浮动 " + fmtPct(h.pnlPct) + "）" });
+          text: h.name + " 跌破 MA10 防线 " + h.stop.toFixed(2) + "（现价 " + h.price.toFixed(2) + "，浮动 " + fmtPct(h.pnlPct) + "），按纪律了结" });
         map[h.code] = "stop";
+      } else if (h.sell && (h.sell.level === "take" || h.sell.level === "trim" || h.sell.level === "weak")) {
+        out.push({ level: "sell", code: h.code, name: h.name, kind: "持仓",
+          text: h.name + " " + h.sell.title + "：" + h.sell.text });
+        map[h.code] = "sell";
       } else if (h.price <= h.buyHi) {
         out.push({ level: "buy", code: h.code, name: h.name, kind: "持仓",
           text: h.name + " 回到买入区间 " + h.buyLo.toFixed(2) + "–" + h.buyHi.toFixed(2) + "（现价 " + h.price.toFixed(2) + "）" });
@@ -2385,7 +2440,8 @@
           text: p.name + " 09:45 前必须了结（现价 " + p.price.toFixed(2) + "，" + fmtPct(p.pnlPct) + "）" });
       }
     });
-    out.sort(function (a, b) { return (b.level === "stop" ? 1 : 0) - (a.level === "stop" ? 1 : 0); });
+    var rank = { stop: 3, sell: 2, buy: 1 };
+    out.sort(function (a, b) { return (rank[b.level] || 0) - (rank[a.level] || 0); });
     state.alerts = out;
     state.alertMap = map;
     return out;
@@ -2422,7 +2478,7 @@
     var pnlCls = h.pnl == null ? "flat" : cls(h.pnl);
     return '<article class="sc hold' + (lvl ? " alert-" + lvl : "") + '" data-code="' + h.code + '">' +
       '<div class="sc-top"><div><div class="sc-name">' + esc(h.name) +
-      (lvl ? '<span class="sc-badge ' + lvl + '">' + (lvl === "stop" ? "跌破止损" : "在买入区") + "</span>" : "") +
+      (lvl ? '<span class="sc-badge ' + lvl + '">' + (lvl === "stop" ? "跌破止损" : lvl === "sell" ? "卖出信号" : "在买入区") + "</span>" : "") +
       "</div>" +
       '<div class="sc-code">' + esc(h.code) + " · 成本 " + h.cost.toFixed(2) + " · " + h.qty + " 股</div></div>" +
       '<div class="sc-pct ' + pnlCls + '">' + (h.pnlPct == null ? "—" : fmtPct(h.pnlPct)) + "</div></div>" +
@@ -2436,6 +2492,7 @@
       '<div class="sc-op warn"><div class="k">止损位</div><div class="v">' + (h.stop == null ? "—" : h.stop.toFixed(2)) + "</div></div>" +
       '<div class="sc-op"><div class="k">MA20</div><div class="v">' + (h.ma20 == null ? "—" : h.ma20.toFixed(2)) + "</div></div>" +
       "</div>" +
+      (h.sell ? '<div class="sc-sell ' + h.sell.level + '"><span class="ss-tag">' + esc(h.sell.title) + '</span><span class="ss-text">' + esc(h.sell.text) + "</span></div>" : "") +
       '<p class="sc-foot">' + (lvl === "stop"
         ? "现价已跌破止损位，按纪律应当离场，不摊平、不补仓。"
         : lvl === "buy"
@@ -2875,7 +2932,7 @@
   // 供自检使用
   window.__APP__ = {
     state: state,
-    api: { analyzeDlt: analyzeDlt, recommendDlt: recommendDlt, analyzeD3: analyzeD3, recommendD3: recommendD3, klineMetrics: klineMetrics, trendScore: trendScore, analyzeMarket: analyzeMarket },
+    api: { sellAdvice: sellAdvice, analyzeDlt: analyzeDlt, recommendDlt: recommendDlt, analyzeD3: analyzeD3, recommendD3: recommendD3, klineMetrics: klineMetrics, trendScore: trendScore, analyzeMarket: analyzeMarket },
     today: TODAY
   };
 })();
