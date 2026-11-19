@@ -279,6 +279,27 @@ def build_message(slot, rows, quotes):
     return "\n".join(parts)
 
 
+def push_mcp(url, chat_id, content):
+    body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                       "params": {"name": "message_aibot_send",
+                                  "arguments": {"chat_id": chat_id, "msg_type": "markdown",
+                                                "markdown": {"content": content}}}},
+                      ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(url, data=body, method="POST",
+                                 headers={"Content-Type": "application/json",
+                                          "Accept": "application/json, text/event-stream"})
+    try:
+        resp = urllib.request.urlopen(req, timeout=15)
+        d = json.loads(resp.read().decode("utf-8"))
+        c = (d.get("result") or {}).get("content") or []
+        inner = json.loads(c[0]["text"]) if c else d
+        if inner.get("errcode") == 0:
+            return True, "ok"
+        return False, str(inner)[:300]
+    except Exception as exc:
+        return False, repr(exc)[:300]
+
+
 def push(webhook, content):
     payload = json.dumps({"msgtype": "markdown", "markdown": {"content": content}}, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(webhook, data=payload, headers={"Content-Type": "application/json"}, method="POST")
@@ -300,16 +321,28 @@ def main():
 
     rows, quotes = build_dataset()
     if args.slot == "holdings":
-        content = "\n".join(["**持仓提醒**"] + holdings_section(quotes)[1:])
+        content = chr(10).join(["**持仓提醒**"] + holdings_section(quotes)[1:])
     else:
         content = build_message(args.slot, rows, quotes)
 
-    if args.dry_run or not os.environ.get("WECOM_WEBHOOK"):
-        print("[dry-run] 未配置 WECOM_WEBHOOK，以下为待发送内容：\n")
-        print(content)
-        return 0 if args.dry_run else 2
+    mcp_url = os.environ.get("WECOM_MCP_URL", "").strip()
+    chat_id = os.environ.get("WECOM_CHAT_ID", "").strip()
+    hook = os.environ.get("WECOM_WEBHOOK", "").strip()
 
-    ok, info = push(os.environ["WECOM_WEBHOOK"].strip(), content)
+    if args.dry_run:
+        print("[dry-run] 以下为待发送内容：")
+        print(content)
+        return 0
+
+    if mcp_url and chat_id:
+        ok, info = push_mcp(mcp_url, chat_id, content)
+    elif hook:
+        ok, info = push(hook, content)
+    else:
+        print("[skip] 缺少 WECOM_MCP_URL/WECOM_CHAT_ID，也没有 WECOM_WEBHOOK")
+        print(content)
+        return 2
+
     print("sent" if ok else "failed: " + info)
     return 0 if ok else 1
 
